@@ -1,5 +1,7 @@
-#include "CellAuto.h"
-
+#include <random>
+#include "Model.h"
+#include "Cell.h"
+#include "CAWorld.h"
 int main()
 {
     auto process = Model::process_type([](Cell *self, std::vector<Cell*> neighbors)
@@ -20,5 +22,6 @@ int main()
     for (int i = 0; i != 10; ++i)
         world.step();
     world.print_world();
+	return 0;
 }
 
