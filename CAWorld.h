@@ -10,6 +10,7 @@ class CAWorld
 {
 public:
     CAWorld(const Model &model);
+	CAWorld(const std::string &model_name);//no implemented, load built-in model
     void step();
     void print_world();
 private:
