@@ -3,7 +3,6 @@
 #include <string>
 #include <algorithm>
 #include <iterator>
-#include "CATypes.h"
 
 // TODO : should we warn user when grid type of the same name is being added?
 Model::Model(world_param_type param, std::vector<grid_param_type> types) : world_param(param) 
@@ -25,11 +24,3 @@ void Model::add_grid_type(const type_name &name, percentage percent, process_typ
 	grid_types[name] = std::move(param);
 }
 
-
-void Model::_add_grid_type(grid_param_type &type)
-{
-	type_name name = std::move(std::get<0>(type));
-	grid_param_type_no_name param = grid_param_type_no_name(std::move(std::get<1>(type)), std::move(std::get<2>(type)),
-		std::move(std::get<3>(type)), std::move(std::get<4>(type)));
-	grid_types[std::move(name)] = std::move(param);
-}

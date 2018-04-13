@@ -1,5 +1,4 @@
 #include "Cell.h"
-#include "CAException.h"
 #include <vector>
 #include <string>
 #include "CATypes.h"
@@ -10,20 +9,13 @@ std::unordered_map<type_name, type_no> Cell::name_to_int;
 
 std::unordered_map<type_no, type_name> Cell::int_to_name;
 
-void Cell::set_type(const type_name &rhs_type)
+int Cell::countSurroundingCellsWithValue(const std::vector<Cell *> &neighbors, const std::string &state)
 {
-	try
+	int surrounding = 0;
+	for (size_t i = 0; i != neighbors.size(); ++i)
 	{
-		int rhs_type_no = name_to_int.at(rhs_type);
-		_set_type(rhs_type_no);
+		if (neighbors[i] != nullptr && (*neighbors[i])[state])
+			++surrounding;
 	}
-	catch (std::out_of_range &)//at out of range
-	{
-		throw nonexist_type("void Cell::set_type(const std::string &) funciton call : type " + rhs_type + " does not exist.");
-	}
-}
-
-const type_name &Cell::get_type() const
-{
-	return int_to_name.at(type);
+	return surrounding;
 }

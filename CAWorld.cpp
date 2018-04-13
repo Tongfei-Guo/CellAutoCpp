@@ -3,15 +3,13 @@
 #include <vector>
 #include <string>
 #include <random>
-#include "CATypes.h"
-#include "Cell.h"
 #include "Model.h"
 
 CAWorld::CAWorld(const Model &model) :
 width(std::get<0>(model.world_param)),
 height(std::get<1>(model.world_param)),
 grid_size(std::get<2>(model.world_param)),
-grid(std::vector<std::vector<Cell>>(height, std::vector<Cell>(width)))
+grid(std::vector<std::vector<Cell>>(std::get<1>(model.world_param), std::vector<Cell>(std::get<0>(model.world_param))))
 {
 	std::vector<std::pair<type_no, percentage>> accum_dist(model.grid_types.size());
 	int temp = 0;

@@ -1,8 +1,8 @@
 #ifndef CA_EXCEPTION_H
 #define CA_EXCEPTION_H
 
-#include <stdexcept>
 #include <string>
+#include <stdexcept>
 
 class nonexist_type : public std::out_of_range
 {
