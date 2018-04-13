@@ -1,0 +1,2 @@
+Commit 6d81a1e: 10 iterations, run 3 times, average time 3.5s
+Commit 58cb495: 10 iterations, run 3 times, average time 3.75s
