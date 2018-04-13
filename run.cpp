@@ -2,18 +2,19 @@
 #include "Model.h"
 #include "Cell.h"
 #include "CAWorld.h"
+#include "CATypes.h"
 int main()
 {
-    auto process = Model::process_type([](Cell *self, std::vector<Cell*> neighbors)
+    auto process = process_type([](Cell *self, std::vector<Cell*> neighbors)
     {
         int surrounding = Cell::countSurroundingCellsWithValue(neighbors, "wasOpen");
         (*self)["open"] = ((*self)["wasOpen"] && surrounding >=4 || surrounding >= 6);
     });
-    auto reset = Model::reset_type([](Cell *self)
+    auto reset = reset_type([](Cell *self)
     {
         (*self)["wasOpen"] = (*self)["open"];
     });
-    auto init = Model::init_type([](Cell *self)
+    auto init = init_type([](Cell *self)
     {
         (*self)["open"] = (((double) rand() / (RAND_MAX)) > 0.4);
     });

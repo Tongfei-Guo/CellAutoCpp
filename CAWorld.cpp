@@ -3,7 +3,9 @@
 #include <vector>
 #include <string>
 #include <random>
+#include "CATypes.h"
 #include "Cell.h"
+#include "Model.h"
 
 CAWorld::CAWorld(const Model &model) :
 width(std::get<0>(model.world_param)),
@@ -11,28 +13,30 @@ height(std::get<1>(model.world_param)),
 grid_size(std::get<2>(model.world_param)),
 grid(std::vector<std::vector<Cell>>(height, std::vector<Cell>(width)))
 {
-	std::vector<std::pair<std::string, int>> accum_dist(model.grid_types.size());
+	std::vector<std::pair<type_no, percentage>> accum_dist(model.grid_types.size());
 	int temp = 0;
-	for (const std::pair<std::string, Model::grid_param_type_no_name> &pair : model.grid_types)
+	int index = 0;
+	for (const std::pair<type_name, Model::grid_param_type_no_name> &pair : model.grid_types)
 	{
-		Cell::type_aux_funcs[pair.first] = std::make_tuple(std::get<1>(pair.second), std::get<2>(pair.second), std::get<3>(pair.second));
+		Cell::name_to_int[pair.first] = index;
+		Cell::int_to_name[index] = pair.first;
+		Cell::type_aux_funcs[index] = std::make_tuple(std::get<1>(pair.second), std::get<2>(pair.second), std::get<3>(pair.second));
 		temp += std::get<0>(pair.second);
-		accum_dist.push_back(std::make_pair(pair.first, temp));
-		
+		accum_dist.push_back(std::make_pair(index++, temp));
 	}
 	for (int i = 0; i != height; ++i)
 	{
 		for (int j = 0; j != width; ++j)
 		{
 			grid[i][j].set_coord(i, j);
-			grid[i][j].set_type(type_initializer(accum_dist));
+			grid[i][j]._set_type(type_initializer(accum_dist));
 		}
 	}
 	for (int i = 0; i != height; ++i)
 	{
 		for (int j = 0; j != width; ++j)
 		{
-			std::get<2>(Cell::type_aux_funcs.at(grid[i][j].get_type()))(&grid[i][j]);
+			std::get<2>(Cell::type_aux_funcs.at(grid[i][j]._get_type()))(&grid[i][j]);
 		}
 	}
 	diffX[0] = [](){return -1; }; diffY[0] = [](){return 1; };// top left
@@ -45,7 +49,7 @@ grid(std::vector<std::vector<Cell>>(height, std::vector<Cell>(width)))
 	diffX[7] = [](){return 1; }; diffY[7] = [](){return -1; }; // bottom right
 }
 
-std::string CAWorld::type_initializer(std::vector<std::pair<std::string, int>> &accum_dist)
+type_no CAWorld::type_initializer(std::vector<std::pair<type_no, percentage>> &accum_dist)
 {
     static std::default_random_engine generator;
     static std::uniform_int_distribution<int> distribution(1,100);
@@ -75,7 +79,7 @@ void CAWorld::step()
     {
         for (int j = 0; j != width; ++j)
         {
-            std::get<1>(Cell::type_aux_funcs.at(grid[i][j].get_type()))(&grid[i][j]);
+            std::get<1>(Cell::type_aux_funcs.at(grid[i][j]._get_type()))(&grid[i][j]);
         }
     }
     std::vector<Cell *> neighbors(diffX.size());
@@ -84,7 +88,7 @@ void CAWorld::step()
         for (int j = 0; j != width; ++j)
         {
             fill_neighbors(neighbors, i ,j);
-            std::get<0>(Cell::type_aux_funcs.at(grid[i][j].get_type()))(&grid[i][j], neighbors);
+            std::get<0>(Cell::type_aux_funcs.at(grid[i][j]._get_type()))(&grid[i][j], neighbors);
         }
     }
 }
