@@ -1,2 +1,4 @@
-Commit 6d81a1e: 10 iterations, run 3 times, average time 3.5s
-Commit 58cb495: 10 iterations, run 3 times, average time 3.75s
+g++-7 7.2.0 optimization levle: -O3 
+Commit 6d81a1e: 100 iterations, run 10 times, average time 1.49s
+Commit 58cb495(using string as key): 100 iterations, run 10 times, average time 1.51s
+Commit 58cb495: 100 iterations, run 10 times, average time 1.43s
