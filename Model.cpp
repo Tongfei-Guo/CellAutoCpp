@@ -23,4 +23,3 @@ void Model::add_grid_type(const type_name &name, percentage percent, process_typ
 	grid_param_type_no_name param = grid_param_type_no_name(percent, process, reset, init);
 	grid_types[name] = std::move(param);
 }
-

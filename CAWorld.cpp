@@ -16,8 +16,8 @@ grid(std::vector<std::vector<Cell>>(std::get<1>(model.world_param), std::vector<
 	int index = 0;
 	for (const std::pair<type_name, Model::grid_param_type_no_name> &pair : model.grid_types)
 	{
-		Cell::name_to_int[pair.first] = index;
-		Cell::int_to_name[index] = pair.first;
+		Cell::type_name_to_int[pair.first] = index;
+		Cell::type_int_to_name[index] = pair.first;
 		Cell::type_aux_funcs[index] = std::make_tuple(std::get<1>(pair.second), std::get<2>(pair.second), std::get<3>(pair.second));
 		temp += std::get<0>(pair.second);
 		accum_dist.push_back(std::make_pair(index++, temp));
@@ -30,11 +30,11 @@ grid(std::vector<std::vector<Cell>>(std::get<1>(model.world_param), std::vector<
 			grid[i][j]._set_type(type_initializer(accum_dist));
 		}
 	}
-	for (int i = 0; i != height; ++i)
+	for (int i = 0; i != height; ++i) // don't combine this for loop with the one above, because some init protentially needs the type of neighboring grids.
 	{
 		for (int j = 0; j != width; ++j)
 		{
-			std::get<2>(Cell::type_aux_funcs.at(grid[i][j]._get_type()))(&grid[i][j]);
+			grid[i][j]._call_init()(&grid[i][j]);
 		}
 	}
 	diffX[0] = [](){return -1; }; diffY[0] = [](){return 1; };// top left
@@ -71,13 +71,14 @@ void CAWorld::fill_neighbors(std::vector<Cell *> &neighbors, int x, int y)
             neighbors[i] = &grid[neighborX][neighborY];
     }
 }
+
 void CAWorld::step()
 {
     for (int i = 0; i != height; ++i)
     {
         for (int j = 0; j != width; ++j)
         {
-            std::get<1>(Cell::type_aux_funcs.at(grid[i][j]._get_type()))(&grid[i][j]);
+            grid[i][j]._call_reset()(&grid[i][j]);
         }
     }
     std::vector<Cell *> neighbors(diffX.size());
@@ -86,7 +87,7 @@ void CAWorld::step()
         for (int j = 0; j != width; ++j)
         {
             fill_neighbors(neighbors, i ,j);
-            std::get<0>(Cell::type_aux_funcs.at(grid[i][j]._get_type()))(&grid[i][j], neighbors);
+			grid[i][j]._call_process()(&grid[i][j], neighbors);
         }
     }
 }

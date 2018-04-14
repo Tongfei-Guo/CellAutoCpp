@@ -18,7 +18,7 @@ int main()
     {
         (*self)["open"] = (((double) rand() / (RAND_MAX)) > 0.4);
     });
-    Model model(std::make_tuple(50, 50, 6), {std::make_tuple("Wall", 100, process, reset, init)});
+	Model model(world_param_type(50, 50, 6), { grid_param_type("Wall", 100, process, reset, init) });
     CAWorld world(model);
     for (int i = 0; i != 10; ++i)
         world.step();
