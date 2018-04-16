@@ -5,12 +5,13 @@
 #include <iterator>
 
 // TODO : should we warn user when grid type of the same name is being added?
-Model::Model(world_param_type param, std::vector<grid_param_type> types) : world_param(param) 
+Model::Model(world_param_type param, std::vector<grid_param_type> types, unsigned size) : world_param(param)
 {
 	for (grid_param_type &type : types)
 	{
 		_add_grid_type(type);
 	}
+	buffersize = size;
 }
 
 void Model::add_grid_type(grid_param_type type)

@@ -16,4 +16,16 @@ private:
 	std::string message;
 };
 
+class combine_error : public std::exception
+{
+public:
+	combine_error(const std::string &&m) : message(std::move(m)){}
+	virtual const char* what() const throw()
+	{
+		return message.c_str();
+	}
+private:
+	std::string message;
+};
+
 #endif

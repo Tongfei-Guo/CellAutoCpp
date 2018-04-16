@@ -13,8 +13,7 @@ class Model
 	friend class Cell;
 public:
     Model(){}
-	Model(world_param_type param) : world_param(param) {}
-	Model(world_param_type param, std::vector<grid_param_type> types); // TODO : error-check user input percent is within 0 - 100, and all percentage sum up to 100.
+	Model(world_param_type param, std::vector<grid_param_type> types = {}, unsigned size = 1); // TODO : error-check user input percent is within 0 - 100, and all percentage sum up to 100.
 	void add_grid_type(grid_param_type type);
 	void add_grid_type(const type_name &name, percentage percent, process_type process, reset_type reset, init_type init);
 	void remove_grid_type(const type_name &name); // TODO : not implemented.
@@ -24,6 +23,7 @@ private:
 	typedef std::tuple<percentage, process_type, reset_type, init_type> grid_param_type_no_name;
     world_param_type world_param;
 	std::unordered_map<type_name, grid_param_type_no_name> grid_types;//use map to easily avoid type of same name.
+	unsigned buffersize; // the number of timestamps we want to keep, 0 meaning keep all timestamps.
 	inline void _add_grid_type(grid_param_type &type);
 };
 

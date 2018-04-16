@@ -20,8 +20,7 @@ int main()
     });
 	Model model(world_param_type(50, 50, 6), { grid_param_type("Wall", 100, process, reset, init) });
     CAWorld world(model);
-    for (int i = 0; i != 10; ++i)
-        world.step();
+	world.step(10);
     world.print_world();
 	return 0;
 }
