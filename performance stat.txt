@@ -1,4 +1,6 @@
 g++-7 7.2.0 optimization levle: -O3 
-Commit 6d81a1e: 100 iterations, run 10 times, average time 1.49s
-Commit 58cb495(using string as key): 100 iterations, run 10 times, average time 1.51s
-Commit 58cb495: 100 iterations, run 10 times, average time 1.43s
+Commit 6d81a1e: 100 iterations, run 10 times, average time 0.149s
+Commit 58cb495(using string as key): 100 iterations, run 10 times, average time 0.151s
+Commit 58cb495: 100 iterations, run 10 times, average time 0.143s
+Commit f6ff46d: 100 iterations, run 10 times, average time 0.241s // runtime adding state take too much time?
+Commit 
