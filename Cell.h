@@ -63,7 +63,9 @@ protected:
 class CellHistBounded : public Cell
 {
 friend class CellHistUnbounded;
+friend class CAWorld;
 public:
+    CellHistBounded() = default;
 	CellHistBounded(unsigned buffersize) : Cell(), type_hist(buffersize), states_hist(buffersize) {}
 	CellHistBounded(const CellHistBounded &) = default;
 	CellHistBounded(CellHistBounded &&) noexcept = default;
@@ -73,6 +75,7 @@ public:
 private:
 	std::deque<type_no> type_hist;
 	std::deque<std::unordered_map<state_no, state_value>> states_hist;
+	inline void buffer_resize(unsigned size);
 	virtual inline void prepare_process() final;
 	virtual inline std::unique_ptr<CellHistBounded> _clone() const & final;
 	virtual inline std::unique_ptr<CellHistBounded> _clone() && final;
@@ -207,6 +210,12 @@ inline void Cell::_move(const std::unique_ptr<CellHistUnbounded> &cell)
 	this->states = std::move(cell->states);
 }
 /* CellHistBounded inlines */
+inline void CellHistBounded::buffer_resize(unsigned size)
+{
+    type_hist.resize(size);
+    states_hist.resize(size);
+}
+
 inline void CellHistBounded::prepare_process()
 {
 	type_hist.pop_front();

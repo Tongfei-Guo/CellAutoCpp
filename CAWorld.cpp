@@ -10,50 +10,50 @@ width(std::get<0>(model.world_param)),
 height(std::get<1>(model.world_param)),
 grid_size(std::get<2>(model.world_param))
 {
+    grid = std::vector<std::vector<Cell*>>(height, std::vector<Cell*>(width));
 	// initialize grid
 	if (model.buffersize == 1)
 	{
+	    Cell *cells = new Cell[height*width];
 	    for (auto i = 0; i != height; ++i)
         {
-            std::vector<std::unique_ptr<Cell>> vec;
             for (auto j = 0; j != width; ++j)
             {
-                vec.push_back(std::make_unique<Cell>());
+                grid[i][j] = &cells[i*width+j];
             }
-            grid.push_back(std::move(vec));
         }
 	}
 	else if (model.buffersize == 0)
 	{
 	    for (auto i = 0; i != height; ++i)
         {
-            std::vector<std::unique_ptr<Cell>> vec;
+            CellHistUnbounded *cells = new CellHistUnbounded[height*width];
             for (auto j = 0; j != width; ++j)
             {
-                vec.push_back(std::make_unique<CellHistUnbounded>());
+                grid[i][j] = &cells[i*width+j];
             }
-            grid.push_back(std::move(vec));
         }
 	}
 	else
 	{
 	    for (auto i = 0; i != height; ++i)
         {
-            std::vector<std::unique_ptr<Cell>> vec;
+            CellHistBounded *cells = new CellHistBounded[height*width];
             for (auto j = 0; j != width; ++j)
             {
-                vec.push_back(std::make_unique<CellHistBounded>(model.buffersize));
+                cells[i*width+j].buffer_resize(model.buffersize);
+                grid[i][j] = &cells[i*width+j];
             }
-            grid.push_back(std::move(vec));
         }
 	}
+
 	//initilize cell tpyes, states ,etc in the grid.
 	std::vector<std::pair<type_no, percentage>> accum_dist(model.grid_types.size());
 	int temp = 0;
 	int index = 0;
 	for (const std::pair<type_name, Model::grid_param_type_no_name> &pair : model.grid_types)
 	{
-		type_no type = Cell::_add_type(pair);   //register functions initialize, process, reset, getcolor
+		type_no type = Cell::_add_type(pair);
 		temp += std::get<0>(pair.second);
 		accum_dist.push_back(std::make_pair(type, temp));
 	}
@@ -67,9 +67,9 @@ grid_size(std::get<2>(model.world_param))
 	}
 	for (auto &row : grid)// don't combine this for loop with the one above, because some init protentially needs the type of neighboring grids.
 	{
-		for (std::unique_ptr<Cell> &cell : row)
+		for (Cell *cell : row)
 		{
-			cell->_call_init()(cell.get());
+			cell->_call_init()(cell);
 		}
 	}
 	diffX[0] = [](){return -1; }; diffY[0] = [](){return 1; };// top left
@@ -99,7 +99,7 @@ void CAWorld::print_world()
 	{
 		for (int j = 0; j != width; ++j)
 		{
-			 int colorind = grid[i][j]->_call_getcolor()(grid[i][j].get());  //std::get<3>(  )(&grid[i][j]);
+			 int colorind = grid[i][j]->_call_getcolor()(grid[i][j]);  //std::get<3>(  )(&grid[i][j]);
 			 bitcolor colorinrgb = palette[colorind];
 			 of <<colorinrgb.R<<" "<<colorinrgb.G<<" "<<colorinrgb.B<<" "<<colorinrgb.alpha<<",";
 
@@ -171,7 +171,7 @@ void CAWorld::fill_neighbors(std::vector<Cell *> &neighbors, int x, int y)
 		if (neighborX < 0 || neighborY < 0 || neighborX >= height || neighborY >= width)
 			neighbors[i] = nullptr;
 		else
-			neighbors[i] = grid[neighborX][neighborY].get();
+			neighbors[i] = grid[neighborX][neighborY];
 	}
 }
 
@@ -179,9 +179,9 @@ void CAWorld::_step()
 {
 	for (auto &row : grid)
 	{
-		for (std::unique_ptr<Cell> &cell : row)
+		for (Cell *cell : row)
 		{
-			cell->_call_reset()(cell.get());
+			cell->_call_reset()(cell);
 		}
 	}
 	std::vector<Cell *> neighbors(diffX.size());
@@ -189,10 +189,10 @@ void CAWorld::_step()
 	{
 		for (auto j = 0; j != width; ++j)
 		{
-		    std::unique_ptr<Cell> &cell = grid[i][j];
+		    Cell *cell = grid[i][j];
 			cell->prepare_process();
 			fill_neighbors(neighbors, i, j);
-			cell->_call_process()(cell.get(), neighbors);
+			cell->_call_process()(cell, neighbors);
 		}
 	}
 }
