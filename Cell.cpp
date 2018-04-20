@@ -3,7 +3,7 @@
 #include <string>
 #include "CATypes.h"
 
-std::unordered_map<type_no, std::tuple<process_type, reset_type, init_type>> Cell::type_aux_funcs;
+std::unordered_map<type_no, std::tuple<process_type, reset_type, init_type,getcolor_type >> Cell::type_aux_funcs;
 
 std::unordered_map<type_name, type_no> Cell::type_name_to_int;
 

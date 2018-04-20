@@ -8,6 +8,8 @@
 #include "CATypes.h"
 #include "Cell.h"
 class Model; //forward dependency
+struct bitcolor;
+
 class CAWorld
 {
 public:
@@ -26,5 +28,6 @@ private:
     type_no type_initializer(const std::vector<std::pair<type_no, percentage>> &accum_dist);
     void fill_neighbors(std::vector<Cell *> &neighbors, int x, int y);
 	void _step();
+    std::vector<bitcolor> palette;
 };
 #endif

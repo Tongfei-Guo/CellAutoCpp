@@ -53,7 +53,7 @@ grid_size(std::get<2>(model.world_param))
 	int index = 0;
 	for (const std::pair<type_name, Model::grid_param_type_no_name> &pair : model.grid_types)
 	{
-		type_no type = Cell::_add_type(pair);
+		type_no type = Cell::_add_type(pair);   //register functions initialize, process, reset, getcolor
 		temp += std::get<0>(pair.second);
 		accum_dist.push_back(std::make_pair(type, temp));
 	}
@@ -80,6 +80,8 @@ grid_size(std::get<2>(model.world_param))
 	diffX[5] = [](){return -1; }; diffY[5] = [](){return -1; }; // bottom left
 	diffX[6] = [](){return 0; }; diffY[6] = [](){return -1; }; // bottom
 	diffX[7] = [](){return 1; }; diffY[7] = [](){return -1; }; // bottom right
+
+    palette = std::move(model.palette);
 }
 
 void CAWorld::step(unsigned steps)
@@ -97,14 +99,11 @@ void CAWorld::print_world()
 	{
 		for (int j = 0; j != width; ++j)
 		{
-			if ((*grid[i][j])["open"])
-			{
-				of << "0,";
-			}
-			else
-				of << "1,";
+			 int colorind = grid[i][j]->_call_getcolor()(grid[i][j].get());  //std::get<3>(  )(&grid[i][j]);
+			 bitcolor colorinrgb = palette[colorind];
+			 of <<colorinrgb.R<<" "<<colorinrgb.G<<" "<<colorinrgb.B<<" "<<colorinrgb.alpha<<",";
+
 		}
-		of << ";";
 	}
 }
 

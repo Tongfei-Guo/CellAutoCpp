@@ -36,7 +36,7 @@ public:
 	static int countSurroundingCellsWithValue(const std::vector<Cell *> &neighbors, const state_name &state);
 
 protected:
-    static std::unordered_map<type_no, std::tuple<process_type, reset_type, init_type>> type_aux_funcs;
+    static std::unordered_map<type_no, std::tuple<process_type, reset_type, init_type, getcolor_type>> type_aux_funcs;
 	static std::unordered_map<type_name, type_no> type_name_to_int;
 	static std::unordered_map<type_no, type_name> type_int_to_name;// mimic a bimap.
 	static std::unordered_map<state_name, state_no> state_name_to_int;
@@ -50,6 +50,7 @@ protected:
 	inline const process_type&_call_process() const;
 	inline const reset_type&_call_reset() const;
 	inline const init_type&_call_init() const;
+	inline const getcolor_type &_call_getcolor() const;
 	virtual void prepare_process() {} // does nothing in the base class
 	// the following functions are for deep copy&move between Cell type and its derived types.
 	inline std::unique_ptr<Cell> _clone() const &;
@@ -145,7 +146,7 @@ inline type_no Cell::_add_type(const std::pair<type_name, Model::grid_param_type
 	static type_no counter = 0;
 	type_name_to_int[pair.first] = counter;
 	type_int_to_name[counter] = pair.first;
-	type_aux_funcs[counter] = std::make_tuple(std::get<1>(pair.second), std::get<2>(pair.second), std::get<3>(pair.second));
+	type_aux_funcs[counter] = std::make_tuple(std::get<1>(pair.second), std::get<2>(pair.second), std::get<3>(pair.second),std::get<4>(pair.second));
 	return counter++;
 }
 
@@ -172,6 +173,11 @@ inline const reset_type&Cell::_call_reset() const
 inline const init_type&Cell::_call_init() const
 {
 	return std::get<2>(type_aux_funcs[type]);
+}
+
+inline const getcolor_type&Cell::_call_getcolor() const
+{
+	return std::get<3>(type_aux_funcs[type]);
 }
 
 inline std::unique_ptr<Cell> Cell::_clone() const &
