@@ -3,7 +3,7 @@
 #include "Cell.h"
 #include "CAWorld.h"
 #include "CATypes.h"
-int main()
+int mainofrun()
 {
     auto process = process_type([](Cell *self, std::vector<Cell*> neighbors)
     {
@@ -26,12 +26,8 @@ int main()
     		return 1;
     });
 
-    std::vector<bitcolor> palette = {
-    		{255,255,255,255},
-    		{0,0,0,255}
-    };
 
-	Model model(world_param_type(50, 50, 6), palette, { grid_param_type("Wall", 100, process, reset, init, getcolor) });
+	Model model(world_param_type(50, 50, 6), { grid_param_type("Wall", 100, process, reset, init, getcolor) });
     CAWorld world(model);
 	world.step(10);
     world.print_world();

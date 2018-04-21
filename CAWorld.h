@@ -8,7 +8,7 @@
 #include "CATypes.h"
 #include "Cell.h"
 class Model; //forward dependency
-struct bitcolor;
+
 
 class CAWorld
 {
@@ -16,7 +16,7 @@ public:
     CAWorld(const Model &model);
 	CAWorld(const std::string &model_name);//no implemented, load built-in model
 	void step(unsigned steps);
-    void print_world();
+	std::vector<int> print_world();
     void print_test();//don't delete until production.
 	CAWorld &combine(const CAWorld &world, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high);
 	CAWorld &combine(CAWorld &&world, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high);
@@ -29,6 +29,5 @@ private:
     type_name type_initializer(const std::vector<std::pair<type_name, percentage>> &accum_dist);
     void fill_neighbors(std::vector<Cell*> &neighbors, int x, int y);
 	void _step();
-    std::vector<bitcolor> palette;
 };
 #endif
