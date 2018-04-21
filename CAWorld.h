@@ -22,6 +22,7 @@ public:
 	~CAWorld() = default; // TODO : free cell memory.
 	void step(unsigned steps);
     void print_world();
+    void print_test();//don't delete until production.
 	CAWorld &combine(const CAWorld &world, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high);
 	CAWorld &combine(CAWorld &&world, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high);
 
@@ -30,7 +31,7 @@ private:
 	std::vector<std::vector<Cell*>> grid;
     std::vector<std::function<int()>> diffX = std::vector<std::function<int()>>(8), diffY = std::vector<std::function<int()>>(8);
 	void combine_error_check(const CAWorld &world, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high);
-    type_no type_initializer(const std::vector<std::pair<type_no, percentage>> &accum_dist);
+    type_name type_initializer(const std::vector<std::pair<type_name, percentage>> &accum_dist);
     void fill_neighbors(std::vector<Cell*> &neighbors, int x, int y);
 	void _step();
     std::vector<bitcolor> palette;

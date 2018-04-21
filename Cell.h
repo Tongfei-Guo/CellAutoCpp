@@ -36,28 +36,23 @@ public:
 	static int countSurroundingCellsWithValue(const std::vector<Cell *> &neighbors, const state_name &state);
 
 protected:
-    static std::unordered_map<type_no, std::tuple<process_type, reset_type, init_type, getcolor_type>> type_aux_funcs;
-	static std::unordered_map<type_name, type_no> type_name_to_int;
-	static std::unordered_map<type_no, type_name> type_int_to_name;// mimic a bimap.
-	static std::unordered_map<state_name, state_no> state_name_to_int;
-	static std::unordered_map<state_no, state_name> state_int_to_name;
-	std::unordered_map<state_no, state_value> states; // TODO : state can be arbitrary type?
+    static std::unordered_map<type_name, std::tuple<process_type, reset_type, init_type, getcolor_type>> type_aux_funcs;
+	std::unordered_map<state_name, state_value> states; // TODO : state can be arbitrary type?
     int x = 0, y = 0;
-    type_no type; // save space, can be mapped to its proper type name by type_name.
-	static inline type_no _add_type(const std::pair<type_name, Model::grid_param_type_no_name> &pair);
-	inline void _set_type(const type_no &rhs_type);
-	inline const type_no &_get_type() const;
+    type_name type; // save space, can be mapped to its proper type name by type_name.
+	static inline const type_name &_add_type(const std::pair<type_name, Model::grid_param_type_no_name> &pair);
+	inline void _set_type(const type_name &rhs_type);
 	inline const process_type&_call_process() const;
 	inline const reset_type&_call_reset() const;
 	inline const init_type&_call_init() const;
 	inline const getcolor_type &_call_getcolor() const;
 	virtual void prepare_process() {} // does nothing in the base class
 	// the following functions are for deep copy&move between Cell type and its derived types.
-	inline std::unique_ptr<Cell> _clone() const &;
-	inline std::unique_ptr<Cell> _clone() && ;
-	inline void _move(const std::unique_ptr<Cell> &cell);
-	inline void _move(const std::unique_ptr<CellHistBounded> &cell);
-	inline void _move(const std::unique_ptr<CellHistUnbounded> &cell);
+	inline Cell* _clone() const &;
+	inline Cell* _clone() && ;
+	inline void _move(Cell *cell);
+	inline void _move(CellHistBounded *cell);
+	inline void _move(CellHistUnbounded *cell);
 };
 
 class CellHistBounded : public Cell
@@ -73,15 +68,15 @@ public:
 	CellHistBounded& operator=(CellHistBounded &&) noexcept = default;
 	virtual ~CellHistBounded() final = default;
 private:
-	std::deque<type_no> type_hist;
-	std::deque<std::unordered_map<state_no, state_value>> states_hist;
+	std::deque<type_name> type_hist;
+	std::deque<std::unordered_map<state_name, state_value>> states_hist;
 	inline void buffer_resize(unsigned size);
 	virtual inline void prepare_process() final;
-	virtual inline std::unique_ptr<CellHistBounded> _clone() const & final;
-	virtual inline std::unique_ptr<CellHistBounded> _clone() && final;
-	virtual inline void _move(const std::unique_ptr<Cell> &cell) final;
-	virtual inline void _move(const std::unique_ptr<CellHistBounded> &cell) final;
-	virtual inline void _move(const std::unique_ptr<CellHistUnbounded> &cell) final;
+	virtual inline CellHistBounded *_clone() const & final;
+	virtual inline CellHistBounded *_clone() && final;
+	virtual inline void _move(Cell *cell) final;
+	virtual inline void _move(CellHistBounded *cell) final;
+	virtual inline void _move(CellHistUnbounded *cell) final;
 };
 
 class CellHistUnbounded : public Cell
@@ -95,30 +90,20 @@ public:
 	CellHistUnbounded& operator=(CellHistUnbounded &&) noexcept = default;
 	virtual ~CellHistUnbounded() final = default;
 private:
-	std::vector<type_no> type_hist;
-	std::vector<std::unordered_map<state_no, state_value>> states_hist;
+	std::vector<type_name> type_hist;
+	std::vector<std::unordered_map<state_name, state_value>> states_hist;
 	virtual inline void prepare_process() final;
-	virtual inline std::unique_ptr<CellHistUnbounded> _clone() const & final;
-	virtual inline std::unique_ptr<CellHistUnbounded> _clone() && final;
-	virtual inline void _move(const std::unique_ptr<Cell> &cell) final;
-	virtual inline void _move(const std::unique_ptr<CellHistBounded> &cell) final;
-	virtual inline void _move(const std::unique_ptr<CellHistUnbounded> &cell) final;
+	virtual inline CellHistUnbounded *_clone() const & final;
+	virtual inline CellHistUnbounded *_clone() && final;
+	virtual inline void _move(Cell *cell) final;
+	virtual inline void _move(CellHistBounded *cell) final;
+	virtual inline void _move(CellHistUnbounded *cell) final;
 };
 
 /* Cell inlines */
 inline state_value &Cell::operator[](const state_name &state)
 {
-	static state_no counter = 0;
-	try
-	{
-		state_name_to_int.at(state);
-	}
-	catch (std::out_of_range &) // populate state_name_to_int and state_name_to_int at run-time when init called.
-	{
-		state_name_to_int[state] = counter;
-		state_int_to_name[counter++] = state;
-	}
-	return states[state_name_to_int[state]];
+	return states[state];
 }
 
 inline void Cell::set_coord(int x_coord, int y_coord)
@@ -128,85 +113,73 @@ inline void Cell::set_coord(int x_coord, int y_coord)
 
 inline void Cell::set_type(const type_name &rhs_type)
 {
-	try
-	{
-		int rhs_type_no = type_name_to_int.at(rhs_type);
-		_set_type(rhs_type_no);
+	if (type_aux_funcs.find(rhs_type) == type_aux_funcs.end())
+    {
+        throw nonexist_type("void Cell::set_type(const std::string &) funciton call : type " + rhs_type + " does not exist.");
 	}
-	catch (std::out_of_range &)//at out of range
-	{
-		throw nonexist_type("void Cell::set_type(const std::string &) funciton call : type " + rhs_type + " does not exist.");
-	}
+	type = rhs_type;
 }
 
 inline const type_name &Cell::get_type() const
 {
-	return type_int_to_name.at(type);
-}
-
-inline type_no Cell::_add_type(const std::pair<type_name, Model::grid_param_type_no_name> &pair)
-{
-	static type_no counter = 0;
-	type_name_to_int[pair.first] = counter;
-	type_int_to_name[counter] = pair.first;
-	type_aux_funcs[counter] = std::make_tuple(std::get<1>(pair.second), std::get<2>(pair.second), std::get<3>(pair.second),std::get<4>(pair.second));
-	return counter++;
-}
-
-inline void Cell::_set_type(const type_no &rhs_type)
-{
-	type = rhs_type;
-}
-
-inline const type_no &Cell::_get_type() const
-{
 	return type;
+}
+
+inline const type_name &Cell::_add_type(const std::pair<type_name, Model::grid_param_type_no_name> &pair)
+{
+	type_aux_funcs[pair.first] = std::make_tuple(std::get<1>(pair.second), std::get<2>(pair.second), std::get<3>(pair.second),std::get<4>(pair.second));
+	return pair.first;
+}
+
+inline void Cell::_set_type(const type_name &rhs_type)
+{
+    type = rhs_type;
 }
 
 inline const process_type&Cell::_call_process() const
 {
-	return std::get<0>(type_aux_funcs[type]);
+	return std::get<0>(type_aux_funcs.at(type));
 }
 
 inline const reset_type&Cell::_call_reset() const
 {
-	return std::get<1>(type_aux_funcs[type]);
+	return std::get<1>(type_aux_funcs.at(type));
 }
 
 inline const init_type&Cell::_call_init() const
 {
-	return std::get<2>(type_aux_funcs[type]);
+	return std::get<2>(type_aux_funcs.at(type));
 }
 
 inline const getcolor_type&Cell::_call_getcolor() const
 {
-	return std::get<3>(type_aux_funcs[type]);
+	return std::get<3>(type_aux_funcs.at(type));
 }
 
-inline std::unique_ptr<Cell> Cell::_clone() const &
+inline Cell* Cell::_clone() const &
 {
-	return std::make_unique<Cell>(*this);
+	return new Cell(*this);
 }
 
-inline std::unique_ptr<Cell> Cell::_clone() &&
+inline Cell* Cell::_clone() &&
 {
-	return std::make_unique<Cell>(std::move(*this)); // do i need move here?
+	return new Cell(std::move(*this)); // do i need move here?
 }
 
-inline void Cell::_move(const std::unique_ptr<Cell> &cell)
+inline void Cell::_move(Cell *cell)
 {
-	this->type = cell->type;
+	this->type = std::move(cell->type);
 	this->states = std::move(cell->states);
 }
 
-inline void Cell::_move(const std::unique_ptr<CellHistBounded> &cell)
+inline void Cell::_move(CellHistBounded *cell)
 {
-	this->type = cell->type;
+	this->type = std::move(cell->type);
 	this->states = std::move(cell->states);
 }
-inline void Cell::_move(const std::unique_ptr<CellHistUnbounded> &cell)
+inline void Cell::_move(CellHistUnbounded *cell)
 {
-	this->type = cell->type;
+	this->type = std::move(cell->type);
 	this->states = std::move(cell->states);
 }
 /* CellHistBounded inlines */
@@ -224,30 +197,30 @@ inline void CellHistBounded::prepare_process()
 	states_hist.push_back(states);
 }
 
-inline std::unique_ptr<CellHistBounded> CellHistBounded::_clone() const &
+inline CellHistBounded *CellHistBounded::_clone() const &
 {
-	return std::make_unique<CellHistBounded>(*this);
+	return new CellHistBounded (*this);
 }
 
-inline std::unique_ptr<CellHistBounded> CellHistBounded::_clone() &&
+inline CellHistBounded *CellHistBounded::_clone() &&
 {
-	return std::make_unique<CellHistBounded>(std::move(*this));
+	return new CellHistBounded (std::move(*this));
 }
 
-inline void CellHistBounded::_move(const std::unique_ptr<Cell> &cell)
+inline void CellHistBounded::_move(Cell *cell)
 {
-	this->type = cell->type;
+	this->type = std::move(cell->type);
 	this->states = std::move(cell->states);
 }
 
-inline void CellHistBounded::_move(const std::unique_ptr<CellHistBounded> &cell)
+inline void CellHistBounded::_move(CellHistBounded *cell)
 {
 	(*this) = std::move(*cell);
 }
 
-inline void CellHistBounded::_move(const std::unique_ptr<CellHistUnbounded> &cell)
+inline void CellHistBounded::_move(CellHistUnbounded *cell)
 {
-    this->type = cell->type;
+    this->type = std::move(cell->type);
 	this->states = std::move(cell->states);
 	auto size1 = this->type_hist.size(), size2 = cell->type_hist.size();
 	copy(cell->type_hist.crbegin(), cell->type_hist.crbegin() - std::min(size1, size2), this->type_hist.rbegin());
@@ -261,25 +234,25 @@ void CellHistUnbounded::prepare_process()
 	states_hist.push_back(states);
 }
 
-inline std::unique_ptr<CellHistUnbounded> CellHistUnbounded::_clone() const &
+inline CellHistUnbounded *CellHistUnbounded::_clone() const &
 {
-	return std::make_unique<CellHistUnbounded>(*this);
+	return new CellHistUnbounded (*this);
 }
 
-inline std::unique_ptr<CellHistUnbounded> CellHistUnbounded::_clone() &&
+inline CellHistUnbounded *CellHistUnbounded::_clone() &&
 {
-	return std::make_unique<CellHistUnbounded>(std::move(*this));
+	return new CellHistUnbounded (std::move(*this));
 }
 
-inline void CellHistUnbounded::_move(const std::unique_ptr<Cell> &cell)
+inline void CellHistUnbounded::_move(Cell *cell)
 {
-	this->type = cell->type;
+	this->type = std::move(cell->type);
 	this->states = std::move(cell->states);
 }
 
-inline void CellHistUnbounded::_move(const std::unique_ptr<CellHistBounded> &cell)
+inline void CellHistUnbounded::_move(CellHistBounded *cell)
 {
-    this->type = cell->type;
+    this->type = std::move(cell->type);
 	this->states = std::move(cell->states);
 	auto size1 = this->type_hist.size(), size2 = cell->type_hist.size();
 	this->type_hist = {};
@@ -288,7 +261,7 @@ inline void CellHistUnbounded::_move(const std::unique_ptr<CellHistBounded> &cel
 	copy(cell->states_hist.cbegin(), cell->states_hist.cend(), std::back_inserter(this->states_hist));
 }
 
-inline void CellHistUnbounded::_move(const std::unique_ptr<CellHistUnbounded> &cell)
+inline void CellHistUnbounded::_move(CellHistUnbounded *cell)
 {
 	(*this) = std::move(*cell);
 }

@@ -48,12 +48,12 @@ grid_size(std::get<2>(model.world_param))
 	}
 
 	//initilize cell tpyes, states ,etc in the grid.
-	std::vector<std::pair<type_no, percentage>> accum_dist(model.grid_types.size());
+	std::vector<std::pair<type_name, percentage>> accum_dist(model.grid_types.size());
 	int temp = 0;
 	int index = 0;
 	for (const std::pair<type_name, Model::grid_param_type_no_name> &pair : model.grid_types)
 	{
-		type_no type = Cell::_add_type(pair);
+		type_name type = Cell::_add_type(pair);
 		temp += std::get<0>(pair.second);
 		accum_dist.push_back(std::make_pair(type, temp));
 	}
@@ -107,6 +107,24 @@ void CAWorld::print_world()
 	}
 }
 
+void CAWorld::print_test()
+{
+	std::ofstream of("output.txt");
+	for (int i = 0; i != height; ++i)
+	{
+		for (int j = 0; j != width; ++j)
+		{
+			if ((*grid[i][j])["open"])
+			{
+				of << "0,";
+			}
+			else
+				of << "1,";
+		}
+		of << ";";
+	}
+}
+
 CAWorld &CAWorld::combine(const CAWorld &world, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high)
 {
 	combine_error_check(world, r_low, r_high, c_low, c_high);
@@ -149,7 +167,7 @@ void CAWorld::combine_error_check(const CAWorld &world, unsigned r_low, unsigned
 		throw combine_error("CAWorld &CAWorld::combine(const CAWorld &, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high) funciton call : c_high = " + std::to_string(c_high) + "out of bound: " + std::to_string(this->width - 1));
 }
 
-type_no CAWorld::type_initializer(const std::vector<std::pair<type_no, percentage>> &accum_dist)
+type_name CAWorld::type_initializer(const std::vector<std::pair<type_name, percentage>> &accum_dist)
 {
 	static std::default_random_engine generator;
 	static std::uniform_int_distribution<int> distribution(1, 100);
