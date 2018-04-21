@@ -1,0 +1,31 @@
+CC = g++
+
+
+#INCLUDES = -I../Eigen -I../glm-0.9.9-a2
+
+SHARE = -march=native -O2
+
+SRCS = CAWorld.cpp Cell.cpp Model.cpp run.cpp
+
+
+OBJS = $(SRCS:.cpp=.o)
+
+MAIN = ./cave
+
+.PHONY: depend clean
+
+all:    $(MAIN)
+	@echo cave has been compiled
+
+$(MAIN): $(OBJS) 
+	$(CC) $(SHARE)  -std=c++14 -o $(MAIN) $(OBJS)
+
+.cpp.o:
+	$(CC) $(SHARE) -std=c++14 -c $<  -o $@
+
+clean:
+	$(RM) *.o *~ $(MAIN)
+
+depend: $(SRCS)
+	makedepend $(INCLUDES) $^
+
