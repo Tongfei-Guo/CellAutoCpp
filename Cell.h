@@ -58,7 +58,9 @@ protected:
 class CellHistBounded : public Cell
 {
 friend class CellHistUnbounded;
+friend class CAWorld;
 public:
+    CellHistBounded() = default;
 	CellHistBounded(unsigned buffersize) : Cell(), type_hist(buffersize), states_hist(buffersize) {}
 	CellHistBounded(const CellHistBounded &) = default;
 	CellHistBounded(CellHistBounded &&) noexcept = default;
