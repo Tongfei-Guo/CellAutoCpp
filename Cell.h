@@ -37,7 +37,7 @@ public:
 	static int countSurroundingCellsWithValue(const std::vector<Cell *> &neighbors, const state_name &state);
 
 protected:
-    static std::unordered_map<type_name, std::tuple<process_type, reset_type, init_type, getcolor_type>> type_aux_funcs;
+    static std::unordered_map<type_name, std::tuple<process_type, reset_type, init_type>> type_aux_funcs;
 	std::unordered_map<state_name, state_value> states; // TODO : state can be arbitrary type?
     int x = 0, y = 0;
     type_name type;
@@ -47,7 +47,6 @@ protected:
 	inline const process_type&_call_process() const;
 	inline const reset_type&_call_reset() const;
 	inline const init_type&_call_init() const;
-	inline const getcolor_type &_call_getcolor() const;
 	virtual void prepare_process() {} // does nothing in the base class
 	virtual inline const unsigned timestamp_size() const;
 	virtual inline void timestamp_resize(unsigned size);
@@ -144,7 +143,7 @@ inline const type_name &Cell::get_type() const
 
 inline const type_name &Cell::_add_type(const std::pair<type_name, Model::grid_param_type_no_name> &pair)
 {
-	type_aux_funcs[pair.first] = std::make_tuple(std::get<1>(pair.second), std::get<2>(pair.second), std::get<3>(pair.second),std::get<4>(pair.second));
+	type_aux_funcs[pair.first] = std::make_tuple(std::get<1>(pair.second), std::get<2>(pair.second), std::get<3>(pair.second));
 	return pair.first;
 }
 
@@ -152,6 +151,7 @@ inline void Cell::_set_type(const type_name &rhs_type)
 {
     type = rhs_type;
 }
+
 
 inline const process_type&Cell::_call_process() const
 {
@@ -166,11 +166,6 @@ inline const reset_type&Cell::_call_reset() const
 inline const init_type&Cell::_call_init() const
 {
 	return std::get<2>(type_aux_funcs.at(type));
-}
-
-inline const getcolor_type&Cell::_call_getcolor() const
-{
-	return std::get<3>(type_aux_funcs.at(type));
 }
 
 inline const unsigned Cell::timestamp_size() const

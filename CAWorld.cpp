@@ -12,7 +12,8 @@ std::vector<std::function<int()>> CAWorld::diffX = std::vector<std::function<int
 CAWorld::CAWorld(const Model &model) :
 height(std::get<0>(model.world_param)),
 width(std::get<1>(model.world_param)),
-grid_size(std::get<2>(model.world_param))
+grid_size(std::get<2>(model.world_param)),
+getcolor(model.getcolor)
 {
     // initialize grid
     grid = grid_type(height, std::vector<Cell*>(width));
@@ -140,8 +141,15 @@ std::vector<int> CAWorld::print_world()
 	{
 		for (int j = 0; j != width; ++j)
 		{
-			 int colorind = grid[i][j]->_call_getcolor()(grid[i][j]);  //std::get<3>(  )(&grid[i][j]);
-			 bitindex.push_back(colorind);
+            if(getcolor != nullptr)
+            {
+            	int colorind = getcolor(grid[i][j]);  //std::get<3>(  )(&grid[i][j]);
+            	bitindex.push_back(colorind);
+            }
+            else
+            {
+            	std::cout<<"Warning: the getcolor is not defined"<<std::endl;
+            }
 
 		}
 	}

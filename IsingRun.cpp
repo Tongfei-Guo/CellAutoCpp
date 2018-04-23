@@ -52,14 +52,17 @@ void runIsing()
 	});
 	auto getcolor = getcolor_type([](Cell *self)
 	{
-		if((*self)["ori"] == 1)
-			return 0;
-		else
-			return 1;
+		if(self->get_type() == "electron")
+		{
+			if((*self)["ori"] == 1)
+				return 0;
+			else
+				return 1;
+		}
 	});
 
 
-	Model model(world_param_type(50, 50, 6), { grid_param_type("electron", 100, process, reset, init, getcolor) });
+	Model model(world_param_type(50, 50, 6), { grid_param_type("electron", 100, process, reset, init) },1,getcolor);
 	CAWorld world(model);
 	world.step(10);
 	world.print_world();

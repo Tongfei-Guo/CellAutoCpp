@@ -37,5 +37,6 @@ private:
 	void _step();
 	void copy_grid(const CAWorld &rhs);
 	void delete_grid();
+    getcolor_type getcolor;
 };
 #endif
