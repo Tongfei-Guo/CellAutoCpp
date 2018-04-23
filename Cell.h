@@ -41,6 +41,7 @@ protected:
 	std::unordered_map<state_name, state_value> states; // TODO : state can be arbitrary type?
     int x = 0, y = 0;
     type_name type;
+    // auxiliary functions
 	static inline const type_name &_add_type(const std::pair<type_name, Model::grid_param_type_no_name> &pair);
 	inline void _set_type(const type_name &rhs_type);
 	inline const process_type&_call_process() const;
@@ -65,6 +66,7 @@ class CellHistBounded : public Cell
 friend class CellHistUnbounded;
 friend class CAWorld;
 public:
+    // CellHistBounded copy control
     CellHistBounded() = default;
 	CellHistBounded(unsigned buffersize) : Cell(), type_hist(buffersize), states_hist(buffersize) {}
 	CellHistBounded(const CellHistBounded &) = default;
@@ -75,10 +77,12 @@ public:
 private:
 	std::deque<type_name> type_hist;
 	std::deque<std::unordered_map<state_name, state_value>> states_hist;
+	// auxiliary functions
 	virtual inline void prepare_process() final;
 	virtual inline const unsigned timestamp_size() const final;
 	virtual inline void timestamp_resize(unsigned size) final;
 	virtual inline Cell get_frame(unsigned i) const final;
+	// deep copy&move
 	virtual inline CellHistBounded *_clone() const & final;
 	virtual inline CellHistBounded *_clone() && final;
 	virtual inline void _move(Cell *cell) final;
@@ -90,6 +94,7 @@ class CellHistUnbounded : public Cell
 {
 friend class CellHistBounded;
 public:
+    // CellHistUnbounded copy control
 	CellHistUnbounded() = default;
 	CellHistUnbounded(const CellHistUnbounded &) = default;
 	CellHistUnbounded(CellHistUnbounded &&) noexcept = default;
@@ -99,10 +104,12 @@ public:
 private:
 	std::vector<type_name> type_hist;
 	std::vector<std::unordered_map<state_name, state_value>> states_hist;
+	// auxiliary functions
 	virtual inline void prepare_process() final;
 	virtual inline const unsigned timestamp_size() const final;
 	virtual inline void timestamp_resize(unsigned size) final;
 	virtual inline Cell get_frame(unsigned i) const final;
+	// deep copy&move
 	virtual inline CellHistUnbounded *_clone() const & final;
 	virtual inline CellHistUnbounded *_clone() && final;
 	virtual inline void _move(Cell *cell) final;

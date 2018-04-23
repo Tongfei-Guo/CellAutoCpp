@@ -52,13 +52,18 @@ grid_size(std::get<2>(model.world_param))
 	}
 	//initilize cell tpyes, states ,etc in the grid.
 	std::vector<std::pair<type_name, percentage>> accum_dist(model.grid_types.size());
-	unsigned temp = 0;
+	percentage percent_sum = 0;
 	for (const std::pair<type_name, Model::grid_param_type_no_name> &pair : model.grid_types)
 	{
 		type_name type = Cell::_add_type(pair);
-		temp += std::get<0>(pair.second);
-		accum_dist.push_back(std::make_pair(type, temp));
+		percentage percent = std::get<0>(pair.second);
+		if (percent > 100) // error-check, percentage is unsigned, don't check for < 0
+		    throw percentage_error("Model : grid_type : " + type + " has a percentage value of " + std::to_string(percent));
+		percent_sum += percent;
+		accum_dist.push_back(std::make_pair(type, percent_sum));
 	}
+	if (percent_sum > 100)
+		    throw percentage_error("Model : the sum of all grid_types' percentage is " + std::to_string(percent_sum));
 	for (int i = 0; i != height; ++i)
 	{
 		for (int j = 0; j != width; ++j)
@@ -306,6 +311,7 @@ void CAWorld::_step()
 		for (Cell *cell : row)
 		{
 			cell->_call_reset()(cell);
+			cell->prepare_process();
 		}
 	}
 	std::vector<Cell *> neighbors(diffX.size());
@@ -314,7 +320,7 @@ void CAWorld::_step()
 		for (auto j = 0; j != width; ++j)
 		{
 		    Cell *cell = grid[i][j];
-			cell->prepare_process();
+
 			fill_neighbors(neighbors, i, j);
 			cell->_call_process()(cell, neighbors);
 		}
