@@ -21,15 +21,13 @@ int main()
     {
         (*self)["open"] = (((double) rand() / (RAND_MAX)) > 0.4);
     });
-    auto getcolor = getcolor_type([](Cell *self)
+     auto getcolor = getcolor_type([](Cell *self)
     {
     	if((*self)["open"])
     		return 0;
     	else
     		return 1;
     });
-
-
 
 	Model model(world_param_type(50, 50, 6), { grid_param_type("Wall", 100, process, reset, init, getcolor) });
     CAWorld world(model);

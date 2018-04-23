@@ -5,6 +5,9 @@
 #include "CAWorld.h"
 #include "Model.h"
 
+std::vector<std::function<int()>> CAWorld::diffX = std::vector<std::function<int()>>(8),
+                                  CAWorld::diffY = std::vector<std::function<int()>>(8);
+
 CAWorld::CAWorld(const Model &model) :
 width(std::get<0>(model.world_param)),
 height(std::get<1>(model.world_param)),
@@ -14,9 +17,9 @@ grid_size(std::get<2>(model.world_param))
     grid = std::vector<std::vector<Cell*>>(height, std::vector<Cell*>(width));
 	if (model.buffersize == 1)
 	{
+	    Cell *cells = new Cell[height*width];
 	    for (auto i = 0; i != height; ++i)
         {
-            Cell *cells = new Cell[height*width];
             for (auto j = 0; j != width; ++j)
             {
                 grid[i][j] = &cells[i*width+j];
@@ -25,9 +28,9 @@ grid_size(std::get<2>(model.world_param))
 	}
 	else if (model.buffersize == 0)
 	{
+	    CellHistUnbounded *cells = new CellHistUnbounded[height*width];
 	    for (auto i = 0; i != height; ++i)
         {
-            CellHistUnbounded *cells = new CellHistUnbounded[height*width];
             for (auto j = 0; j != width; ++j)
             {
                 grid[i][j] = &cells[i*width+j];
@@ -36,9 +39,9 @@ grid_size(std::get<2>(model.world_param))
 	}
 	else
 	{
+	    CellHistBounded *cells = new CellHistBounded[height*width];
 	    for (auto i = 0; i != height; ++i)
         {
-            CellHistBounded *cells = new CellHistBounded[height*width];
             for (auto j = 0; j != width; ++j)
             {
                 cells[i*width+j].buffer_resize(model.buffersize);
@@ -46,11 +49,9 @@ grid_size(std::get<2>(model.world_param))
             }
         }
 	}
-
 	//initilize cell tpyes, states ,etc in the grid.
 	std::vector<std::pair<type_name, percentage>> accum_dist(model.grid_types.size());
-	int temp = 0;
-	int index = 0;
+	unsigned temp = 0;
 	for (const std::pair<type_name, Model::grid_param_type_no_name> &pair : model.grid_types)
 	{
 		type_name type = Cell::_add_type(pair);
@@ -80,7 +81,41 @@ grid_size(std::get<2>(model.world_param))
 	diffX[5] = [](){return -1; }; diffY[5] = [](){return -1; }; // bottom left
 	diffX[6] = [](){return 0; }; diffY[6] = [](){return -1; }; // bottom
 	diffX[7] = [](){return 1; }; diffY[7] = [](){return -1; }; // bottom right
+}
 
+CAWorld::CAWorld(const CAWorld &rhs): height(rhs.height), width(rhs.width), grid_size(rhs.grid_size)
+{
+    copy_grid(rhs);
+}
+
+CAWorld::CAWorld(CAWorld &&rhs) noexcept : height(rhs.height), width(rhs.width), grid_size(rhs.grid_size)
+{
+    rhs.height = rhs.width = 0;
+    grid = std::move(rhs.grid);
+}
+
+CAWorld &CAWorld::operator=(const CAWorld &rhs)
+{
+    if (this == &rhs) return *this;
+    delete_grid();
+    height = rhs.height;
+    width = rhs.width;
+    grid_size = rhs.grid_size;
+    copy_grid(rhs);
+}
+
+CAWorld &CAWorld::operator=(CAWorld &&rhs) noexcept
+{
+    // this will take care of the destruction of the moved-to object's original grid.
+    std::swap(height, rhs.height);
+    std::swap(width, rhs.width);
+    std::swap(grid_size, rhs.grid_size);
+    std::swap(grid, rhs.grid);
+}
+
+CAWorld::~CAWorld()
+{
+    delete_grid();
 }
 
 void CAWorld::step(unsigned steps)
@@ -213,4 +248,70 @@ void CAWorld::_step()
 			cell->_call_process()(cell, neighbors);
 		}
 	}
+}
+
+void CAWorld::copy_grid(const CAWorld &rhs)
+{
+    grid = std::vector<std::vector<Cell*>>(height, std::vector<Cell*>(width));
+    if (dynamic_cast<CellHistUnbounded*>(rhs.grid[0][0]) != nullptr) //grid cell type is CellHistUnbounded
+    {
+        CellHistUnbounded *cells = new CellHistUnbounded[height*width];
+        CellHistUnbounded *rhs_cells = dynamic_cast<CellHistUnbounded*>(rhs.grid[0][0]);
+	    for (auto i = 0; i != height; ++i)
+        {
+            for (auto j = 0; j != width; ++j)
+            {
+                cells[i*width+j] = rhs_cells[i*width+j];
+                grid[i][j] = &cells[i*width+j];
+            }
+        }
+    }
+    if (dynamic_cast<CellHistBounded*>(rhs.grid[0][0]) != nullptr) //grid cell type is CellHistBounded
+    {
+        CellHistBounded *cells = new CellHistBounded[height*width];
+        CellHistBounded *rhs_cells = dynamic_cast<CellHistBounded*>(rhs.grid[0][0]);
+	    for (auto i = 0; i != height; ++i)
+        {
+            for (auto j = 0; j != width; ++j)
+            {
+                cells[i*width+j] = rhs_cells[i*width+j];
+                grid[i][j] = &cells[i*width+j];
+            }
+        }
+    }
+    else//grid cell type is Cell
+    {
+        Cell *cells = new Cell[height*width];
+        Cell *rhs_cells = rhs.grid[0][0];
+	    for (auto i = 0; i != height; ++i)
+        {
+            for (auto j = 0; j != width; ++j)
+            {
+                cells[i*width+j] = rhs_cells[i*width+j];
+                grid[i][j] = &cells[i*width+j];
+            }
+        }
+    }
+}
+
+void CAWorld::delete_grid()
+{
+    if (height != 0 && width != 0)
+    {
+        if (dynamic_cast<CellHistUnbounded*>(grid[0][0]) != nullptr) //grid cell type is CellHistUnbounded
+        {
+            CellHistUnbounded *lhs_cells = dynamic_cast<CellHistUnbounded*>(grid[0][0]);
+            delete [] lhs_cells;
+        }
+        else if (dynamic_cast<CellHistBounded*>(grid[0][0]) != nullptr) //grid cell type is CellHistUnbounded
+        {
+            CellHistBounded *lhs_cells = dynamic_cast<CellHistBounded*>(grid[0][0]);
+            delete [] lhs_cells;
+        }
+        else //grid cell type is Cell
+        {
+            Cell *lhs_cells = grid[0][0];
+            delete [] lhs_cells;
+        }
+    }
 }

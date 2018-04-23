@@ -7,15 +7,11 @@
 #include <functional>
 #include <unordered_map>
 
-
-
-
 class Model
 {
     friend class CAWorld;
 	friend class Cell;
 public:
-    Model(){}
 	Model(world_param_type param, std::vector<grid_param_type> types = {}, unsigned size = 1); // TODO : error-check user input percent is within 0 - 100, and all percentage sum up to 100.
 
 	void add_grid_type(grid_param_type type);
@@ -31,7 +27,6 @@ private:
 	inline void _add_grid_type(grid_param_type &type);
 };
 
-
 inline void Model::_add_grid_type(grid_param_type &type)
 {
 	type_name name = std::move(std::get<0>(type));
@@ -41,5 +36,4 @@ inline void Model::_add_grid_type(grid_param_type &type)
 	grid_types[std::move(name)] = std::move(param);
 
 }
-
 #endif
