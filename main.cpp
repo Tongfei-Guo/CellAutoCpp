@@ -29,14 +29,17 @@ int main()
     		return 1;
     });
 
-	Model model(world_param_type(50, 50, 6), { grid_param_type("Wall", 100, process, reset, init, getcolor) });
-    CAWorld world(model);
+    CAWorld world1(Model(world_param_type(100, 50, 6), { grid_param_type("Wall", 100, process, reset, init, getcolor) },0));
+    CAWorld world2(Model(world_param_type(100, 50, 6), { grid_param_type("Wall", 100, process, reset, init, getcolor) },1));
+    CAWorld world3(Model(world_param_type(100, 100, 6), { grid_param_type("Wall", 100, process, reset, init, getcolor) },3));
 	auto start = std::chrono::high_resolution_clock::now();
-    world.step(100);
+	//world3.combine(world1.step(2), 0, 99, 0, 49);
+    world3.combine(world1.step(2), 0, 99, 0, 49).combine(world2.step(1), 0, 99, 50, 99).step(1);
     auto elapsed = std::chrono::high_resolution_clock::now() - start;
     auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed).count();
     std::cout << nanoseconds << "nanoseconds\n";
-    world.print_test();
+    auto timestamp = world3.get_timestamps();
+    world3.print_test(timestamp, 1);
 	return 0;
 }
 

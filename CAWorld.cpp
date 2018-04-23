@@ -4,17 +4,18 @@
 #include <random>
 #include "CAWorld.h"
 #include "Model.h"
+#include <iostream>
 
 std::vector<std::function<int()>> CAWorld::diffX = std::vector<std::function<int()>>(8),
                                   CAWorld::diffY = std::vector<std::function<int()>>(8);
 
 CAWorld::CAWorld(const Model &model) :
-width(std::get<0>(model.world_param)),
-height(std::get<1>(model.world_param)),
+height(std::get<0>(model.world_param)),
+width(std::get<1>(model.world_param)),
 grid_size(std::get<2>(model.world_param))
 {
     // initialize grid
-    grid = std::vector<std::vector<Cell*>>(height, std::vector<Cell*>(width));
+    grid = grid_type(height, std::vector<Cell*>(width));
 	if (model.buffersize == 1)
 	{
 	    Cell *cells = new Cell[height*width];
@@ -44,7 +45,7 @@ grid_size(std::get<2>(model.world_param))
         {
             for (auto j = 0; j != width; ++j)
             {
-                cells[i*width+j].buffer_resize(model.buffersize);
+                cells[i*width+j].timestamp_resize(model.buffersize-1);
                 grid[i][j] = &cells[i*width+j];
             }
         }
@@ -118,12 +119,13 @@ CAWorld::~CAWorld()
     delete_grid();
 }
 
-void CAWorld::step(unsigned steps)
+CAWorld &CAWorld::step(unsigned steps)
 {
 	for (unsigned i = 0; i != steps; ++i)
 	{
 		_step();
 	}
+	return (*this);
 }
 
 std::vector<int> CAWorld::print_world()
@@ -142,14 +144,16 @@ std::vector<int> CAWorld::print_world()
 	return std::move(bitindex);
 }
 
-void CAWorld::print_test()
+void CAWorld::print_test(std::vector<frame_type> &frames, unsigned k)
 {
 	std::ofstream of("output.txt");
 	for (int i = 0; i != height; ++i)
 	{
 		for (int j = 0; j != width; ++j)
 		{
-			if ((*grid[i][j])["open"])
+		    if (frames[k][i][j].type == "")
+		        of << "2,";
+			else if ((frames[k][i][j])["open"])
 			{
 				of << "0,";
 			}
@@ -163,27 +167,94 @@ void CAWorld::print_test()
 CAWorld &CAWorld::combine(const CAWorld &world, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high)
 {
 	combine_error_check(world, r_low, r_high, c_low, c_high);
+	auto frames_before = grid[r_low][c_low]->timestamp_size();
 	for (auto i = r_low; i <= r_high; ++i)
 	{
 		for (auto j = c_low; j <= c_high; ++j)
 		{
-			this->grid[i][j]->_move(world.grid[i - r_low][j - c_low]->_clone());
+		    Cell *curr = world.grid[i - r_low][j - c_low]->_clone();
+		    if (dynamic_cast<CellHistBounded*>(curr) != nullptr)
+		        grid[i][j]->_move(dynamic_cast<CellHistBounded*>(curr));
+			else if (dynamic_cast<CellHistUnbounded*>(curr) != nullptr)
+			    grid[i][j]->_move(dynamic_cast<CellHistUnbounded*>(curr));
+            else
+                grid[i][j]->_move(curr);
 		}
 	}
+	auto frames_after = grid[r_low][c_low]->timestamp_size();
+	if (frames_after > frames_before) // this only happens in CellUnboundedCell case.
+    {
+        for (auto i = 0; i != height; ++i)
+        {
+            for (auto j = 0; j != width; ++j)
+            {
+                grid[i][j]->timestamp_resize(frames_after);
+            }
+        }
+    }
 	return (*this);
 }
 
 CAWorld &CAWorld::combine(CAWorld &&world, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high)
 {
 	combine_error_check(world, r_low, r_high, c_low, c_high);
+	auto frames_before = grid[r_low][c_low]->timestamp_size();
 	for (auto i = r_low; i <= r_high; ++i)
 	{
 		for (auto j = c_low; j <= c_high; ++j)
 		{
-			this->grid[i][j]->_move(std::move(world.grid[i - r_low][j - c_low])->_clone());
+		    Cell *curr = std::move(world.grid[i - r_low][j - c_low])->_clone();
+		    if (dynamic_cast<CellHistBounded*>(curr) != nullptr)
+		        grid[i][j]->_move(dynamic_cast<CellHistBounded*>(curr));
+			else if (dynamic_cast<CellHistUnbounded*>(curr) != nullptr)
+			    grid[i][j]->_move(dynamic_cast<CellHistUnbounded*>(curr));
+            else
+                grid[i][j]->_move(curr);
 		}
 	}
+	auto frames_after = grid[r_low][c_low]->timestamp_size();
+	if (frames_after > frames_before) // this only happens in CellUnboundedCell case.
+    {
+        for (auto i = 0; i <= height; ++i)
+        {
+            for (auto j = 0; j <= width; ++j)
+            {
+                grid[i][j]->timestamp_resize(frames_after);
+            }
+        }
+    }
 	return (*this);
+}
+
+std::vector<frame_type> CAWorld::get_timestamps()
+{
+    unsigned size = grid[0][0]->timestamp_size();
+    std::vector<frame_type> timestamps(size+1, frame_type(height, std::vector<Cell>(width, Cell())));
+    for (int j = 0; j != height; ++j)
+    {
+        for (int k = 0; k != width; ++k)
+        {
+            timestamps[0][j][k] = grid[j][k]->get_frame(0);
+            for (int i = 1; i <= size; ++i)
+            {
+                timestamps[i][j][k] = grid[j][k]->get_frame(i);
+            }
+        }
+    }
+    return timestamps;
+}
+
+frame_type CAWorld::get_timestamp()
+{
+    frame_type timestamp(height, std::vector<Cell>(width, Cell()));
+    for (int j = 0; j != height; ++j)
+    {
+        for (int k = 0; k != width; ++k)
+        {
+            timestamp[j][k] = grid[j][k]->get_frame(0);
+        }
+    }
+    return timestamp;
 }
 
 void CAWorld::combine_error_check(const CAWorld &world, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high)
@@ -252,7 +323,7 @@ void CAWorld::_step()
 
 void CAWorld::copy_grid(const CAWorld &rhs)
 {
-    grid = std::vector<std::vector<Cell*>>(height, std::vector<Cell*>(width));
+    grid = grid_type(height, std::vector<Cell*>(width));
     if (dynamic_cast<CellHistUnbounded*>(rhs.grid[0][0]) != nullptr) //grid cell type is CellHistUnbounded
     {
         CellHistUnbounded *cells = new CellHistUnbounded[height*width];
@@ -266,7 +337,7 @@ void CAWorld::copy_grid(const CAWorld &rhs)
             }
         }
     }
-    if (dynamic_cast<CellHistBounded*>(rhs.grid[0][0]) != nullptr) //grid cell type is CellHistBounded
+    else if (dynamic_cast<CellHistBounded*>(rhs.grid[0][0]) != nullptr) //grid cell type is CellHistBounded
     {
         CellHistBounded *cells = new CellHistBounded[height*width];
         CellHistBounded *rhs_cells = dynamic_cast<CellHistBounded*>(rhs.grid[0][0]);

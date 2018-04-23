@@ -12,6 +12,7 @@
 #include "CATypes.h"
 #include "CAException.h"
 #include "Model.h"
+#include <iostream>
 class CellHistBounded; //forward dependency
 class CellHistUnbounded; //forward dependency
 class Cell
@@ -39,7 +40,7 @@ protected:
     static std::unordered_map<type_name, std::tuple<process_type, reset_type, init_type, getcolor_type>> type_aux_funcs;
 	std::unordered_map<state_name, state_value> states; // TODO : state can be arbitrary type?
     int x = 0, y = 0;
-    type_name type; // save space, can be mapped to its proper type name by type_name.
+    type_name type;
 	static inline const type_name &_add_type(const std::pair<type_name, Model::grid_param_type_no_name> &pair);
 	inline void _set_type(const type_name &rhs_type);
 	inline const process_type&_call_process() const;
@@ -47,12 +48,16 @@ protected:
 	inline const init_type&_call_init() const;
 	inline const getcolor_type &_call_getcolor() const;
 	virtual void prepare_process() {} // does nothing in the base class
+	virtual inline const unsigned timestamp_size() const;
+	virtual inline void timestamp_resize(unsigned size);
+	virtual inline Cell get_frame(unsigned i) const;
 	// the following functions are for deep copy&move between Cell type and its derived types.
-	inline Cell* _clone() const &;
-	inline Cell* _clone() && ;
-	inline void _move(Cell *cell);
-	inline void _move(CellHistBounded *cell);
-	inline void _move(CellHistUnbounded *cell);
+	// _clone should always be called with a _move, it will be free within the immediate _move where it gets called.
+	virtual inline Cell *_clone() const &;
+	virtual inline Cell *_clone() && ;
+	virtual inline void _move(Cell *cell);
+	virtual inline void _move(CellHistBounded *cell);
+	virtual inline void _move(CellHistUnbounded *cell);
 };
 
 class CellHistBounded : public Cell
@@ -70,8 +75,10 @@ public:
 private:
 	std::deque<type_name> type_hist;
 	std::deque<std::unordered_map<state_name, state_value>> states_hist;
-	inline void buffer_resize(unsigned size);
 	virtual inline void prepare_process() final;
+	virtual inline const unsigned timestamp_size() const final;
+	virtual inline void timestamp_resize(unsigned size) final;
+	virtual inline Cell get_frame(unsigned i) const final;
 	virtual inline CellHistBounded *_clone() const & final;
 	virtual inline CellHistBounded *_clone() && final;
 	virtual inline void _move(Cell *cell) final;
@@ -93,6 +100,9 @@ private:
 	std::vector<type_name> type_hist;
 	std::vector<std::unordered_map<state_name, state_value>> states_hist;
 	virtual inline void prepare_process() final;
+	virtual inline const unsigned timestamp_size() const final;
+	virtual inline void timestamp_resize(unsigned size) final;
+	virtual inline Cell get_frame(unsigned i) const final;
 	virtual inline CellHistUnbounded *_clone() const & final;
 	virtual inline CellHistUnbounded *_clone() && final;
 	virtual inline void _move(Cell *cell) final;
@@ -156,39 +166,55 @@ inline const getcolor_type&Cell::_call_getcolor() const
 	return std::get<3>(type_aux_funcs.at(type));
 }
 
-inline Cell* Cell::_clone() const &
+inline const unsigned Cell::timestamp_size() const
+{
+    return 0;
+}
+
+inline void Cell::timestamp_resize(unsigned size)
+{
+    throw internal_error("void Cell::timestamp_resize(" + std::to_string(size) + ")" ); // this function shouldn't be called
+}
+inline Cell Cell::get_frame(unsigned i) const
+{
+    if (i == 0)
+    {
+        return (*this);
+    }
+    else
+        throw internal_error("Cell Cell::get_frame(" + std::to_string(i) + ")" );
+}
+
+inline Cell *Cell::_clone() const &
 {
 	return new Cell(*this);
 }
 
-inline Cell* Cell::_clone() &&
+inline Cell *Cell::_clone() &&
 {
 	return new Cell(std::move(*this)); // do i need move here?
 }
 
 inline void Cell::_move(Cell *cell)
 {
-	this->type = std::move(cell->type);
-	this->states = std::move(cell->states);
+	type = std::move(cell->type);
+	states = std::move(cell->states);
+	delete cell;
 }
 
 inline void Cell::_move(CellHistBounded *cell)
 {
-	this->type = std::move(cell->type);
-	this->states = std::move(cell->states);
+	type = std::move(cell->type);
+	states = std::move(cell->states);
+	delete cell;
 }
 inline void Cell::_move(CellHistUnbounded *cell)
 {
-	this->type = std::move(cell->type);
-	this->states = std::move(cell->states);
+	type = std::move(cell->type);
+	states = std::move(cell->states);
+	delete cell;
 }
 /* CellHistBounded inlines */
-inline void CellHistBounded::buffer_resize(unsigned size)
-{
-    type_hist.resize(size);
-    states_hist.resize(size);
-}
-
 inline void CellHistBounded::prepare_process()
 {
 	type_hist.pop_front();
@@ -197,34 +223,90 @@ inline void CellHistBounded::prepare_process()
 	states_hist.push_back(states);
 }
 
+inline const unsigned CellHistBounded::timestamp_size() const
+{
+    return type_hist.size();
+}
+
+inline void CellHistBounded::timestamp_resize(unsigned size)
+{
+    type_hist.resize(size);
+    states_hist.resize(size);
+}
+
+inline Cell CellHistBounded::get_frame(unsigned i) const
+{
+    if (i == 0)
+    {
+        return (*this);
+    }
+    else if (i <= type_hist.size())
+    {
+        Cell cell;
+        cell.type = type_hist[type_hist.size()-i];
+        cell.states = states_hist[type_hist.size()-i];
+        return cell;
+    }
+    else
+        throw internal_error("Cell CellHistBounded::get_frame(" + std::to_string(i) + ")" );
+}
+
 inline CellHistBounded *CellHistBounded::_clone() const &
 {
-	return new CellHistBounded (*this);
+	return new CellHistBounded(*this);
 }
 
 inline CellHistBounded *CellHistBounded::_clone() &&
 {
-	return new CellHistBounded (std::move(*this));
+	return new CellHistBounded(std::move(*this));
 }
 
 inline void CellHistBounded::_move(Cell *cell)
 {
-	this->type = std::move(cell->type);
-	this->states = std::move(cell->states);
+	type = std::move(cell->type);
+	states = std::move(cell->states);
+	auto size = type_hist.size();
+	type_hist = std::deque<type_name>(size);
+	states_hist = std::deque<std::unordered_map<state_name, state_value>>(size);
+	delete cell;
 }
 
 inline void CellHistBounded::_move(CellHistBounded *cell)
 {
+    auto diff_size = type_hist.size() - cell->type_hist.size();
 	(*this) = std::move(*cell);
+	while (diff_size != 0)
+    {
+        if (diff_size > 0)
+        {
+            --diff_size;
+            type_hist.push_front(type_name());
+            states_hist.push_front(std::unordered_map<state_name, state_value>());
+        }
+        else
+        {
+            ++diff_size;
+            type_hist.pop_front();
+            states_hist.pop_front();
+        }
+    }
+    delete cell;
 }
 
 inline void CellHistBounded::_move(CellHistUnbounded *cell)
 {
-    this->type = std::move(cell->type);
-	this->states = std::move(cell->states);
-	auto size1 = this->type_hist.size(), size2 = cell->type_hist.size();
-	copy(cell->type_hist.crbegin(), cell->type_hist.crbegin() - std::min(size1, size2), this->type_hist.rbegin());
-	copy(cell->states_hist.crbegin(), cell->states_hist.crbegin() - std::min(size1, size2), this->states_hist.rbegin());
+    type = std::move(cell->type);
+	states = std::move(cell->states);
+	auto size1 = type_hist.size(), size2 = cell->type_hist.size();
+	copy(cell->type_hist.crbegin(), cell->type_hist.crbegin() + std::min(size1, size2), type_hist.rbegin());
+	copy(cell->states_hist.crbegin(), cell->states_hist.crbegin() + std::min(size1, size2), states_hist.rbegin());
+	auto diff_size = size1 - size2;
+	while (diff_size-- > 0)
+    {
+        type_hist.push_front(type_name());
+        states_hist.push_front(std::unordered_map<state_name, state_value>());
+    }
+    delete cell;
 }
 
 /*CellHistUnbounded inlines*/
@@ -234,36 +316,89 @@ void CellHistUnbounded::prepare_process()
 	states_hist.push_back(states);
 }
 
+inline const unsigned CellHistUnbounded::timestamp_size() const
+{
+    return type_hist.size();
+}
+
+inline void CellHistUnbounded::timestamp_resize(unsigned size)
+{
+
+    if (type_hist.size() < size)
+    {
+        std::vector<type_name> temp_type_hist(size);
+        std::copy(type_hist.crbegin(), type_hist.crend(), temp_type_hist.rbegin());
+        type_hist = temp_type_hist;
+        std::vector<std::unordered_map<state_name, state_value>> temp_states_hist(size);
+        std::copy(states_hist.crbegin(), states_hist.crend(), temp_states_hist.rbegin());
+        states_hist = temp_states_hist;
+    }
+}
+
+inline Cell CellHistUnbounded::get_frame(unsigned i) const
+{
+    if (i == 0)
+    {
+        return (*this);
+    }
+    else if (i <= type_hist.size())
+    {
+        Cell cell;
+        cell.type = type_hist[type_hist.size()-i];
+        cell.states = states_hist[type_hist.size()-i];
+        return cell;
+    }
+    else
+        throw internal_error("Cell CellHistUnbounded::get_frame(" + std::to_string(i) + ")" );
+}
+
 inline CellHistUnbounded *CellHistUnbounded::_clone() const &
 {
-	return new CellHistUnbounded (*this);
+	return new CellHistUnbounded(*this);
 }
 
 inline CellHistUnbounded *CellHistUnbounded::_clone() &&
 {
-	return new CellHistUnbounded (std::move(*this));
+	return new CellHistUnbounded(std::move(*this));
 }
 
 inline void CellHistUnbounded::_move(Cell *cell)
 {
-	this->type = std::move(cell->type);
-	this->states = std::move(cell->states);
+    std::fill(type_hist.begin(), type_hist.end(), type_name(""));
+    std::fill(states_hist.begin(), states_hist.end(), std::unordered_map<state_name, state_value>());
+	type = std::move(cell->type);
+	states = std::move(cell->states);
+	delete cell;
 }
 
 inline void CellHistUnbounded::_move(CellHistBounded *cell)
 {
-    this->type = std::move(cell->type);
-	this->states = std::move(cell->states);
-	auto size1 = this->type_hist.size(), size2 = cell->type_hist.size();
-	this->type_hist = {};
-	this->states_hist = {};
+    type = std::move(cell->type);
+	states = std::move(cell->states);
+	auto size1 = type_hist.size(), size2 = cell->type_hist.size();
+	if (size1 > size2)
+    {
+        type_hist = std::vector<type_name>(size1 - size2);
+	    states_hist = std::vector<std::unordered_map<state_name, state_value>>(size1 - size2);
+    }
 	copy(cell->type_hist.cbegin(), cell->type_hist.cend(), std::back_inserter(this->type_hist));
 	copy(cell->states_hist.cbegin(), cell->states_hist.cend(), std::back_inserter(this->states_hist));
+	delete cell;
 }
 
 inline void CellHistUnbounded::_move(CellHistUnbounded *cell)
 {
-	(*this) = std::move(*cell);
+	type = std::move(cell->type);
+	states = std::move(cell->states);
+	auto size1 = type_hist.size(), size2 = cell->type_hist.size();
+	if (size1 > size2)
+    {
+        type_hist = std::vector<type_name>(size1 - size2);
+	    states_hist = std::vector<std::unordered_map<state_name, state_value>>(size1 - size2);
+    }
+	copy(cell->type_hist.cbegin(), cell->type_hist.cend(), std::back_inserter(this->type_hist));
+	copy(cell->states_hist.cbegin(), cell->states_hist.cend(), std::back_inserter(this->states_hist));
+	delete cell;
 }
 
 #endif
