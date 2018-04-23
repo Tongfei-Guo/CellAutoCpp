@@ -80,8 +80,6 @@ grid_size(std::get<2>(model.world_param))
 	diffX[5] = [](){return -1; }; diffY[5] = [](){return -1; }; // bottom left
 	diffX[6] = [](){return 0; }; diffY[6] = [](){return -1; }; // bottom
 	diffX[7] = [](){return 1; }; diffY[7] = [](){return -1; }; // bottom right
-
-    palette = std::move(model.palette);
 }
 
 void CAWorld::step(unsigned steps)
@@ -92,19 +90,20 @@ void CAWorld::step(unsigned steps)
 	}
 }
 
-void CAWorld::print_world()
+std::vector<int> CAWorld::print_world()
 {
-	std::ofstream of("output.txt");
+	//std::ofstream of("output.txt");
+        std::vector<int> bitmap;
 	for (int i = 0; i != height; ++i)
 	{
 		for (int j = 0; j != width; ++j)
 		{
 			 int colorind = grid[i][j]->_call_getcolor()(grid[i][j].get());  //std::get<3>(  )(&grid[i][j]);
-			 bitcolor colorinrgb = palette[colorind];
-			 of <<colorinrgb.R<<" "<<colorinrgb.G<<" "<<colorinrgb.B<<" "<<colorinrgb.alpha<<",";
-
+                         bitmap.push_back(colorind);
 		}
 	}
+
+        return std::move(bitmap);
 }
 
 CAWorld &CAWorld::combine(const CAWorld &world, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high)

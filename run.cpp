@@ -3,6 +3,13 @@
 #include "Cell.h"
 #include "CAWorld.h"
 #include "CATypes.h"
+
+
+//render:
+#include <thread>
+#include <CArender.hpp>
+
+#include <iostream>
 int main()
 {
     auto process = process_type([](Cell *self, std::vector<Cell*> neighbors)
@@ -31,10 +38,17 @@ int main()
     		{0,0,0,255}
     };
 
-	Model model(world_param_type(50, 50, 6), palette, { grid_param_type("Wall", 100, process, reset, init, getcolor) });
+    Model model(world_param_type(50, 50, 6), { grid_param_type("Wall", 100, process, reset, init, getcolor) });
     CAWorld world(model);
 	world.step(10);
-    world.print_world();
-	return 0;
+    
+    using namespace std::chrono_literals;
+    CARender render(50,50,palette);
+    auto bitmap = world.print_world();
+    std::cout<<bitmap.size()<<std::endl;
+    while (render.Renderworld(bitmap))
+    {
+        std::this_thread::sleep_for(10ms);
+    }
 }
 
