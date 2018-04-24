@@ -14,11 +14,11 @@ class CAWorld
 {
 public:
     CAWorld(const Model &model);
-	CAWorld(const std::string &model_name);//no implemented, load built-in model
-	void step(unsigned steps);
-    void print_world();
-	CAWorld &combine(const CAWorld &world, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high);
-	CAWorld &combine(CAWorld &&world, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high);
+    CAWorld(const std::string &model_name);//no implemented, load built-in model
+    void step(unsigned steps);
+    std::vector<int> print_world();
+    CAWorld &combine(const CAWorld &world, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high);
+    CAWorld &combine(CAWorld &&world, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high);
 
 private:
     int width = 0, height = 0, grid_size = 0;
