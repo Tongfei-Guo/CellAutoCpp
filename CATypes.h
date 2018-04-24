@@ -15,7 +15,7 @@ typedef std::function<void(Cell *)> init_type;
 typedef std::function<void(grid_type &grid, Cell*)> process_type;
 typedef std::function<int(Cell *)> getcolor_type;
 
-typedef std::tuple<type_name, percentage, process_type, reset_type, init_type, getcolor_type> grid_param_type;
+typedef std::tuple<type_name, percentage, process_type, reset_type, init_type> grid_param_type;
 typedef std::string state_name;//TODO : make this template type?
 typedef int state_value; //TODO : make this template type? potentially value could be int , double, or something else.
 
