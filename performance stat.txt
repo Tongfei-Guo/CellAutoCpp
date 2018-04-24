@@ -1,4 +1,8 @@
 g++-7 7.2.0 optimization levle: -O3 
-Commit 6d81a1e: 100 iterations, run 10 times, average time 1.49s
-Commit 58cb495(using string as key): 100 iterations, run 10 times, average time 1.51s
-Commit 58cb495: 100 iterations, run 10 times, average time 1.43s
+Commit 6d81a1e: 100 iterations, run 10 times, average time 0.149s
+Commit 58cb495(using string as key): 100 iterations, run 10 times, average time 0.151s
+Commit 58cb495: 100 iterations, run 10 times, average time 0.143s
+Commit f6ff46d: 100 iterations, run 10 times, average time 0.241s // runtime adding state take too much time?
+Commit 3be72e7: 100 iterations, run 10 times, average time 0.148s
+Commit 7cc931e: 100 iterations, run 10 times, average time 0.150s, because make_unique<Cell>() allocates dynamic memory contiguously if that's my only program 
+running, in case of multiple program running, this could fail, and if that cause no memory locality, the performance would be 0.298s.

@@ -8,26 +8,43 @@
 #include "CATypes.h"
 #include "Cell.h"
 class Model; //forward dependency
-struct bitcolor;
+
 
 class CAWorld
 {
 public:
     CAWorld(const Model &model);
-    CAWorld(const std::string &model_name);//no implemented, load built-in model
-    void step(unsigned steps);
-    std::vector<int> print_world();
+
+	CAWorld(const std::string &model_name);//no implemented, load built-in model
+	CAWorld(const CAWorld &rhs);
+	CAWorld(CAWorld &&rhs) noexcept;
+	CAWorld &operator=(const CAWorld &rhs);
+	CAWorld &operator=(CAWorld &&rhs) noexcept;
+	~CAWorld();
+
+	CAWorld & step(unsigned steps);
+
+	std::vector<int> print_world();
+    void print_test(std::vector<frame_type> &frames, unsigned k);//don't delete until production.
+
+    void save2file(const char * filename); //save the type and states of Cells in grid into file
+    void loadfromfile(const char * filename); //load the type and states into Cells in grid from file
+
     CAWorld &combine(const CAWorld &world, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high);
     CAWorld &combine(CAWorld &&world, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high);
 
+	std::vector<frame_type> get_timestamps();
+    frame_type get_timestamp();
 private:
-    int width = 0, height = 0, grid_size = 0;
-	std::vector<std::vector<std::unique_ptr<Cell>>> grid;
-    std::vector<std::function<int()>> diffX = std::vector<std::function<int()>>(8), diffY = std::vector<std::function<int()>>(8);
+    unsigned width, height, grid_size;
+	grid_type grid;
+    static std::vector<std::function<int()>> diffX, diffY;
 	void combine_error_check(const CAWorld &world, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high);
-    type_no type_initializer(const std::vector<std::pair<type_no, percentage>> &accum_dist);
-    void fill_neighbors(std::vector<Cell *> &neighbors, int x, int y);
+    type_name type_initializer(const std::vector<std::pair<type_name, percentage>> &accum_dist);
+    void fill_neighbors(std::vector<Cell*> &neighbors, int x, int y);
 	void _step();
-    std::vector<bitcolor> palette;
+	void copy_grid(const CAWorld &rhs);
+	void delete_grid();
+    getcolor_type getcolor;
 };
 #endif
