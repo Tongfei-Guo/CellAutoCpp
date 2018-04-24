@@ -33,7 +33,10 @@ public:
 	inline state_value &operator[](const state_name &state);
 	void set_coord(int x_coord, int y_coord);
 	inline void set_type(const type_name &rhs_type);
+
 	inline const type_name &get_type() const;
+	inline const std::unordered_map<state_name, state_value> & get_states() const;
+
 	static int countSurroundingCellsWithValue(const std::vector<Cell *> &neighbors, const state_name &state);
 
 protected:
@@ -216,6 +219,17 @@ inline void Cell::_move(CellHistUnbounded *cell)
 	states = std::move(cell->states);
 	delete cell;
 }
+
+
+inline const std::unordered_map<state_name, state_value> & Cell::get_states() const
+{
+    return states;
+}
+
+
+
+
+
 /* CellHistBounded inlines */
 inline void CellHistBounded::prepare_process()
 {

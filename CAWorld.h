@@ -20,12 +20,19 @@ public:
 	CAWorld &operator=(const CAWorld &rhs);
 	CAWorld &operator=(CAWorld &&rhs) noexcept;
 	~CAWorld();
+
 	CAWorld & step(unsigned steps);
+
 	std::vector<int> print_world();
     void print_test(std::vector<frame_type> &frames, unsigned k);//don't delete until production.
-	CAWorld &combine(const CAWorld &world, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high);
+
+    void save2file(const char * filename); //save the type and states of Cells in grid into file
+    void loadfromfile(const char * filename); //load the type and states into Cells in grid from file
+
+    CAWorld &combine(const CAWorld &world, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high);
 	CAWorld &combine(CAWorld &&world, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high);
-    std::vector<frame_type> get_timestamps();
+
+	std::vector<frame_type> get_timestamps();
     frame_type get_timestamp();
 private:
     unsigned width, height, grid_size;

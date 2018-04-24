@@ -5,6 +5,10 @@
 #include "CAWorld.h"
 #include "Model.h"
 #include <iostream>
+#include <sstream>
+#include <iterator>
+#include <algorithm>
+#include <cctype>
 
 std::vector<std::function<int()>> CAWorld::diffX = std::vector<std::function<int()>>(8),
                                   CAWorld::diffY = std::vector<std::function<int()>>(8);
@@ -175,6 +179,87 @@ void CAWorld::print_test(std::vector<frame_type> &frames, unsigned k)
 		}
 		of << ";";
 	}
+}
+
+
+void CAWorld::save2file(char const * filename)
+{
+	//savefile format :
+	//typename , statename1 statename2 statename1 ..., val1 val2 val3 ... \n
+
+	std::fstream savefile;
+    savefile.open(filename,std::ios::out);
+    for(int i = 0; i < height; i++)
+    {
+    	for(int j = 0; j != width; j++)
+    	{
+            Cell * cell = grid[i][j];
+            savefile << cell->get_type()<<" , ";
+            auto statemap = cell->get_states();
+            for(const auto state:statemap) savefile<<state.first<<" ";
+            savefile<<",";
+            for(const auto state:statemap) savefile<<state.second<<" ";
+            savefile<<"\n";
+    	}
+
+    }
+    savefile.close();
+
+}
+
+void CAWorld::loadfromfile(char const * filename)
+{
+	//savefile format :
+	//typename , statename1 statename2 statename1 ..., val1 val2 val3 ... \n
+
+    std::fstream savefile;
+    savefile.open(filename,std::ios::in);
+    std::string alineoflog;
+
+	for (int i = 0; i != height; ++i)
+	{
+		for (int j = 0; j != width; ++j)
+		{
+
+		std::getline(savefile,alineoflog);
+		if(savefile.rdstate()!= std::ios::goodbit)
+		{
+			std::cout<<"something wrong when load the file, please check if the grid is fit into the log"<<std::endl;
+		}
+
+			std::stringstream logstream(alineoflog); //get the type name
+			std::string statename;
+			std::getline(logstream,statename,',');
+
+			statename.erase(std::remove_if(statename.begin(), statename.end(), [](char c){return std::isspace(c);}), statename.end());
+
+			grid[i][j]->set_type(statename);
+
+
+			std::string namelist;
+			std::getline(logstream,namelist,',');
+			std::stringstream nametmp(namelist);
+			std::istream_iterator<std::string> listit(nametmp);
+
+			std::string vallist;
+			std::getline(logstream, vallist, ',');
+			std::stringstream valtmp(vallist);
+			std::istream_iterator<int> valit(valtmp);
+
+
+			while(valit != std::istream_iterator<int>())
+			{
+				auto statename = *(listit++);
+				auto stateval  = *(valit++);
+				(*grid[i][j])[statename] = stateval;
+				std::cout<<statename<<std::endl;
+				std::cout <<stateval <<std::endl;
+			}
+
+			std::cout<<"\n";
+		}
+	}
+    savefile.close();
 }
 
 CAWorld &CAWorld::combine(const CAWorld &world, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high)

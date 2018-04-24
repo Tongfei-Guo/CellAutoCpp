@@ -31,10 +31,12 @@ int main()
     });
 
 
-	Model model(world_param_type(50, 50, 6), { grid_param_type("Wall", 100, process, reset, init) },1,getcolor);
+	Model model(world_param_type(2, 2, 6), { grid_param_type("Wall", 100, process, reset, init) },1,getcolor);
     CAWorld world(model);
 	world.step(10);
-    world.print_world();
+    //world.print_world();
+	//world.save2file("cavelog.txt");
+	world.loadfromfile("cavelog.txt");
 	return 0;
 }
 
