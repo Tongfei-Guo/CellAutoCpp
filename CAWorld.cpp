@@ -50,6 +50,9 @@ grid_size(std::get<2>(model.world_param))
             }
         }
 	}
+	/*for (auto &row : grid)
+	    for (Cell *cell : row)
+	        std::cout << cell << std::endl;*/
 	//initilize cell tpyes, states ,etc in the grid.
 	std::vector<std::pair<type_name, percentage>> accum_dist(model.grid_types.size());
 	percentage percent_sum = 0;
@@ -68,7 +71,6 @@ grid_size(std::get<2>(model.world_param))
 	{
 		for (int j = 0; j != width; ++j)
 		{
-			grid[i][j]->set_coord(i, j);
 			grid[i][j]->_set_type(type_initializer(accum_dist));
 		}
 	}
@@ -124,12 +126,19 @@ CAWorld::~CAWorld()
     delete_grid();
 }
 
-CAWorld &CAWorld::step(unsigned steps)
+CAWorld &CAWorld::forall_step(unsigned steps)
 {
 	for (unsigned i = 0; i != steps; ++i)
 	{
-		_step();
+		_forall_step();
 	}
+	return (*this);
+}
+
+CAWorld &CAWorld::step(unsigned x, unsigned y)
+{
+	if ((x > height-1) || (y > width-1))
+	_step(x, y);
 	return (*this);
 }
 
@@ -291,20 +300,7 @@ type_name CAWorld::type_initializer(const std::vector<std::pair<type_name, perce
 
 }
 
-void CAWorld::fill_neighbors(std::vector<Cell *> &neighbors, int x, int y)
-{
-	for (auto i = 0; i != diffX.size(); ++i)
-	{
-		int neighborX = x + diffX[i]();
-		int neighborY = y + diffY[i]();
-		if (neighborX < 0 || neighborY < 0 || neighborX >= height || neighborY >= width)
-			neighbors[i] = nullptr;
-		else
-			neighbors[i] = grid[neighborX][neighborY];
-	}
-}
-
-void CAWorld::_step()
+void CAWorld::_forall_step()
 {
 	for (auto &row : grid)
 	{
@@ -314,17 +310,28 @@ void CAWorld::_step()
 			cell->prepare_process();
 		}
 	}
-	std::vector<Cell *> neighbors(diffX.size());
 	for (auto i = 0; i != height; ++i)
 	{
 		for (auto j = 0; j != width; ++j)
 		{
 		    Cell *cell = grid[i][j];
-
-			fill_neighbors(neighbors, i, j);
-			cell->_call_process()(cell, neighbors);
+			cell->_call_process()(grid, cell);
 		}
 	}
+}
+
+void CAWorld::_step(unsigned i, unsigned j)
+{
+    for (auto &row : grid)
+	{
+		for (Cell *cell : row)
+		{
+			cell->_call_reset()(cell);
+			cell->prepare_process();
+		}
+	}
+	Cell *cell = grid[i][j];
+    cell->_call_process()(grid, cell);
 }
 
 void CAWorld::copy_grid(const CAWorld &rhs)

@@ -23,7 +23,6 @@ friend class CellHistUnbounded;
 public:
 	// Cell copy-control
     Cell(){}
-    Cell(int x_coord, int y_coord): x(x_coord), y(y_coord) {}
 	Cell(const Cell &) = default;
 	Cell(Cell &&) noexcept = default;
 	Cell& operator=(const Cell &) = default;
@@ -31,7 +30,6 @@ public:
 	virtual ~Cell() = default;
 	// auxiliary functions
 	inline state_value &operator[](const state_name &state);
-	void set_coord(int x_coord, int y_coord);
 	inline void set_type(const type_name &rhs_type);
 	inline const type_name &get_type() const;
 	static int countSurroundingCellsWithValue(const std::vector<Cell *> &neighbors, const state_name &state);
@@ -39,7 +37,6 @@ public:
 protected:
     static std::unordered_map<type_name, std::tuple<process_type, reset_type, init_type, getcolor_type>> type_aux_funcs;
 	std::unordered_map<state_name, state_value> states; // TODO : state can be arbitrary type?
-    int x = 0, y = 0;
     type_name type;
     // auxiliary functions
 	static inline const type_name &_add_type(const std::pair<type_name, Model::grid_param_type_no_name> &pair);
@@ -121,11 +118,6 @@ private:
 inline state_value &Cell::operator[](const state_name &state)
 {
 	return states[state];
-}
-
-inline void Cell::set_coord(int x_coord, int y_coord)
-{
-    x = x_coord; y = y_coord;
 }
 
 inline void Cell::set_type(const type_name &rhs_type)
