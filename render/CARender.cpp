@@ -33,7 +33,7 @@ std::vector<GLfloat> CARender::interpretbitmap(std::vector<int> bitindex)
 }
 
 CARender::CARender(int gridweigh, int gridlength,std::vector<bitcolor>  worldpalette)
-	:gridsize(gridweigh,gridlength),SCR_WIDTH(gridweigh * 10),SCR_HEIGHT(gridlength * 10),palette(std::move(worldpalette))
+	:gridsize(gridweigh,gridlength),SCR_WIDTH(500),SCR_HEIGHT(500),palette(std::move(worldpalette))
 {
 	static const GLfloat vertices[] =
     {

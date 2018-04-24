@@ -1,12 +1,14 @@
 CC = g++
 
-INCLUDES = -I depend/glm-0.9.9-a2 -I depend/glad -I ./render
+INCLUDES = -I depend/glm-0.9.9-a2 -I depend/glad -I ./render -I ./src
 
 CMPORDER = -march=native -g
 
 
 _CA = CAWorld.cpp Cell.cpp Model.cpp ising.cpp
-CAOBJ = $(_CA:.cpp=.o)
+_CADIR = CAsrc
+CA = $(patsubst %,$(_CADIR)/%,$(_CA))
+CAOBJ = $(CA:.cpp=.o)
 
 
 
@@ -30,7 +32,7 @@ all:    $(MAIN)
 $(MAIN): $(CAOBJ) $(RENOBJ)
 	$(CC) $(CMPORDER) $(INCLUDES) -std=c++14 -o $(MAIN) $(GLADDEN) $(CAOBJ) $(RENOBJ) $(RENDDEPEN)
 
-./%.o: ./%.cpp
+$(_CADIR)/%.o: $(_CADIR)/%.cpp
 	$(CC) $(INCLUDES) $(CMPORDER)  -std=c++14   -c -o $@ $<
 
 $(_RENDDIR)/%.o: $(_RENDDIR)/%.cpp
