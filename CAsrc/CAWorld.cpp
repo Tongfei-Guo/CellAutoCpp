@@ -160,7 +160,7 @@ CAWorld &CAWorld::forall_step(unsigned steps)
 
 CAWorld &CAWorld::step(unsigned x, unsigned y)
 {
-	if ((x > height-1) || (y > width-1))
+	//if ((x > height-1) || (y > width-1))
 	_step(x, y);
 	return (*this);
 }
@@ -215,7 +215,7 @@ void CAWorld::save2file(char const * filename)
 	//savefile format :
 	//typename , statename1 statename2 statename1 ..., val1 val2 val3 ... \n
 
-	std::fstream savefile;
+    std::fstream savefile;
     savefile.open(filename,std::ios::out);
     for(int i = 0; i < height; i++)
     {
@@ -426,7 +426,7 @@ void CAWorld::_forall_step()
                 {
                     Cell *cell = grid[j][k];
                     cell->_call_reset()(cell);
-			        cell->prepare_process();
+	            cell->prepare_process();
                 }
             }
         }, std::ref(grid));
@@ -460,14 +460,14 @@ void CAWorld::_forall_step()
 
 void CAWorld::_step(unsigned i, unsigned j)
 {
-    for (auto &row : grid)
+    /*for (auto &row : grid)
 	{
 		for (Cell *cell : row)
 		{
 			cell->_call_reset()(cell);
 			cell->prepare_process();
 		}
-	}
+	}*/
 	Cell *cell = grid[i][j];
     cell->_call_process()(grid, cell);
 }
