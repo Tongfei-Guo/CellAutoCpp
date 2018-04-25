@@ -49,7 +49,7 @@ int main()
     auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed).count();
     std::cout << nanoseconds << "nanoseconds\n";
     auto timestamp = world3.get_timestamps();
-    world3.print_test(timestamp, 2);
+    world3.print_test(timestamp, 0);
 	return 0;
 }
 
