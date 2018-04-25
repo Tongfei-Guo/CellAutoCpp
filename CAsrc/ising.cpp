@@ -131,7 +131,7 @@ int main()
     auto bitmap = world.print_world();
 
 
-    for(int i = 0; i < gridsize*gridsize*5; i++)//render.Renderworld(bitmap))
+/*    for(int i = 0; i < gridsize*gridsize*5; i++)//render.Renderworld(bitmap))
     {
         int gridx = flipgen();
         int gridy = flipgen();
@@ -148,9 +148,10 @@ int main()
             std::cout<<"overall flip:"<<i/(gridsize*gridsize)<<std::endl;
         }
         //std::this_thread::sleep_for(1000ms);
-    }
+    }*/
+
     
-    char tmpfile[] = "isinglog.txt";  
+    /*char tmpfile[] = "isinglog.txt";  
     world.save2file(tmpfile);
     
     Model newmodel(world_param_type(gridsize, gridsize, 6), { grid_param_type("electron", 100, process2, reset, init) },1, getcolor);
@@ -172,8 +173,40 @@ int main()
         {
             std::cout<<"overall flip:"<<i/(gridsize*gridsize)<<std::endl;
         }
+    }*/
+    
+    //measure speed
+
+
+   auto start = std::chrono::high_resolution_clock::now();
+
+
+    for(int i = 0; i < 10000; i++)//render.Renderworld(bitmap))
+    {
+        int gridx = flipgen();
+        int gridy = flipgen();
+        world.step(gridx,gridy);
+        //world.forall_step(1);
+        //std::cout<<"selected grid: "<<gridx<<","<<gridy<<std::endl;
+        /*if(i%4000 == 0)
+	{
+        	bitmap = world.print_world();
+        	if(!render.Renderworld(bitmap)) break;
+	}
+        if(i%(gridsize*gridsize) == 0)
+        {
+            std::cout<<"overall flip:"<<i/(gridsize*gridsize)<<std::endl;
+        }*/
+
+        //std::this_thread::sleep_for(1000ms);
+
     }
 
+
+    //world3.forall_step(100);
+    auto elapsed = std::chrono::high_resolution_clock::now() - start;
+    auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed).count();
+    std::cout << nanoseconds << "nanoseconds\n";
 
 
 }
