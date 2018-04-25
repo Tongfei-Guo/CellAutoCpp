@@ -5,14 +5,14 @@ INCLUDES = -I depend/glm-0.9.9-a2 -I depend/glad -I ./render -I ./src
 CMPORDER = -march=native -g
 
 
-_CA = CAWorld.cpp Cell.cpp Model.cpp ising.cpp
+_CA = CAWorld.cpp Cell.cpp Model.cpp ising.cpp CAFunctions.cpp
 _CADIR = CAsrc
 CA = $(patsubst %,$(_CADIR)/%,$(_CA))
 CAOBJ = $(CA:.cpp=.o)
 
 
 
-RENDDEPEN = -lglfw -lGL -ldl
+RENDDEPEN = -lglfw -lGL -ldl -lpthread
 
 _RENDER = CARender.cpp
 _RENDDIR = render
