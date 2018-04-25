@@ -9,9 +9,27 @@
 #include <iterator>
 #include <algorithm>
 #include <cctype>
+#include <thread>
 
-std::vector<std::function<int()>> CAWorld::diffX = std::vector<std::function<int()>>(8),
-                                  CAWorld::diffY = std::vector<std::function<int()>>(8);
+std::vector<std::function<int()>>
+CAWorld::diffX = std::vector<std::function<int()>>
+({[](){return -1;},
+ [](){return 0; },
+ [](){return 1; },
+ [](){return -1; },
+ [](){return 1; },
+ [](){return -1; },
+ [](){return 0; },
+ [](){return 1; }}),
+CAWorld::diffY = std::vector<std::function<int()>>
+({[](){return 1; },
+ [](){return 1; },
+ [](){return 1; },
+ [](){return 0; },
+ [](){return 0; },
+ [](){return -1; },
+ [](){return -1; },
+ [](){return -1; }});
 
 CAWorld::CAWorld(const Model &model) :
 height(std::get<0>(model.world_param)),
@@ -19,6 +37,13 @@ width(std::get<1>(model.world_param)),
 grid_size(std::get<2>(model.world_param)),
 getcolor(model.getcolor)
 {
+    //error check on world_param.
+    if (height == 0)
+        throw CAWorld_param_error("CAWorld(const Model &model)", "height");
+    if (width == 0)
+        throw CAWorld_param_error("CAWorld(const Model &model)", "width");
+    if (grid_size == 0)
+        throw CAWorld_param_error("CAWorld(const Model &model)", "grid_size");
     // initialize grid
     grid = grid_type(height, std::vector<Cell*>(width));
 	if (model.buffersize == 1)
@@ -55,6 +80,9 @@ getcolor(model.getcolor)
             }
         }
 	}
+	/*for (auto &row : grid)
+	    for (Cell *cell : row)
+	        std::cout << cell << std::endl;*/
 	//initilize cell tpyes, states ,etc in the grid.
 	std::vector<std::pair<type_name, percentage>> accum_dist(model.grid_types.size());
 	percentage percent_sum = 0;
@@ -73,7 +101,6 @@ getcolor(model.getcolor)
 	{
 		for (int j = 0; j != width; ++j)
 		{
-			grid[i][j]->set_coord(i, j);
 			grid[i][j]->_set_type(type_initializer(accum_dist));
 		}
 	}
@@ -84,14 +111,7 @@ getcolor(model.getcolor)
 			cell->_call_init()(cell);
 		}
 	}
-	diffX[0] = [](){return -1; }; diffY[0] = [](){return 1; };// top left
-	diffX[1] = [](){return 0; }; diffY[1] = [](){return 1; };// top
-	diffX[2] = [](){return 1; }; diffY[2] = [](){return 1; }; //top right
-	diffX[3] = [](){return -1; }; diffY[3] = [](){return 0; }; //left
-	diffX[4] = [](){return 1; }; diffY[4] = [](){return 0; };//right
-	diffX[5] = [](){return -1; }; diffY[5] = [](){return -1; }; // bottom left
-	diffX[6] = [](){return 0; }; diffY[6] = [](){return -1; }; // bottom
-	diffX[7] = [](){return 1; }; diffY[7] = [](){return -1; }; // bottom right
+
 }
 
 CAWorld::CAWorld(const CAWorld &rhs): height(rhs.height), width(rhs.width), grid_size(rhs.grid_size)
@@ -129,12 +149,19 @@ CAWorld::~CAWorld()
     delete_grid();
 }
 
-CAWorld &CAWorld::step(unsigned steps)
+CAWorld &CAWorld::forall_step(unsigned steps)
 {
 	for (unsigned i = 0; i != steps; ++i)
 	{
-		_step();
+		_forall_step();
 	}
+	return (*this);
+}
+
+CAWorld &CAWorld::step(unsigned x, unsigned y)
+{
+	if ((x > height-1) || (y > width-1))
+	_step(x, y);
 	return (*this);
 }
 
@@ -264,9 +291,9 @@ CAWorld &CAWorld::combine(const CAWorld &world, unsigned r_low, unsigned r_high,
 {
 	combine_error_check(world, r_low, r_high, c_low, c_high);
 	auto frames_before = grid[r_low][c_low]->timestamp_size();
-	for (auto i = r_low; i <= r_high; ++i)
+	for (auto i = r_low; i != r_high; ++i)
 	{
-		for (auto j = c_low; j <= c_high; ++j)
+		for (auto j = c_low; j != c_high; ++j)
 		{
 		    Cell *curr = world.grid[i - r_low][j - c_low]->_clone();
 		    if (dynamic_cast<CellHistBounded*>(curr) != nullptr)
@@ -295,9 +322,9 @@ CAWorld &CAWorld::combine(CAWorld &&world, unsigned r_low, unsigned r_high, unsi
 {
 	combine_error_check(world, r_low, r_high, c_low, c_high);
 	auto frames_before = grid[r_low][c_low]->timestamp_size();
-	for (auto i = r_low; i <= r_high; ++i)
+	for (auto i = r_low; i != r_high; ++i)
 	{
-		for (auto j = c_low; j <= c_high; ++j)
+		for (auto j = c_low; j != c_high; ++j)
 		{
 		    Cell *curr = std::move(world.grid[i - r_low][j - c_low])->_clone();
 		    if (dynamic_cast<CellHistBounded*>(curr) != nullptr)
@@ -359,13 +386,13 @@ void CAWorld::combine_error_check(const CAWorld &world, unsigned r_low, unsigned
 		throw combine_error("CAWorld &CAWorld::combine(const CAWorld &, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high) funciton call : r_high = " + std::to_string(r_high) + " cannot be less than r_low = " + std::to_string(r_low));
 	else if (c_high < c_low)
 		throw combine_error("CAWorld &CAWorld::combine(const CAWorld &, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high) funciton call : c_high = " + std::to_string(c_high) + " cannot be less than c_low = " + std::to_string(c_low));
-	else if (world.height != r_high - r_low + 1)
+	else if (world.height != r_high - r_low)
 		throw combine_error("CAWorld &CAWorld::combine(const CAWorld &, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high) funciton call : input CAWorld height " + std::to_string(world.height) + " does not agree with input lower bound " + std::to_string(r_low) + " and input upper bound " + std::to_string(r_high));
-	else if (world.width != c_high - c_low + 1)
+	else if (world.width != c_high - c_low)
 		throw combine_error("CAWorld &CAWorld::combine(const CAWorld &, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high) funciton call : input CAWorld width " + std::to_string(world.width) + " does not agree with input lower bound " + std::to_string(c_low) + " and input upper bound " + std::to_string(c_high));
-	else if (r_high > this->height - 1)
+	else if (r_high > this->height)
 		throw combine_error("CAWorld &CAWorld::combine(const CAWorld &, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high) funciton call : r_high = " + std::to_string(r_high) + "out of bound: " + std::to_string(this->height - 1));
-	else if (r_high > this->width - 1)
+	else if (r_high > this->width)
 		throw combine_error("CAWorld &CAWorld::combine(const CAWorld &, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high) funciton call : c_high = " + std::to_string(c_high) + "out of bound: " + std::to_string(this->width - 1));
 }
 
@@ -382,22 +409,58 @@ type_name CAWorld::type_initializer(const std::vector<std::pair<type_name, perce
 
 }
 
-void CAWorld::fill_neighbors(std::vector<Cell *> &neighbors, int x, int y)
+void CAWorld::_forall_step()
 {
-	for (auto i = 0; i != diffX.size(); ++i)
-	{
-		int neighborX = x + diffX[i]();
-		int neighborY = y + diffY[i]();
-		if (neighborX < 0 || neighborY < 0 || neighborX >= height || neighborY >= width)
-			neighbors[i] = nullptr;
-		else
-			neighbors[i] = grid[neighborX][neighborY];
-	}
+    unsigned num_cpus = std::thread::hardware_concurrency();
+    std::vector<std::thread> threads(num_cpus);
+    //reset
+	for (unsigned i = 0; i != num_cpus; ++i)
+    {
+        threads[i] = std::thread([i, num_cpus](grid_type &grid)
+        {
+            auto height = grid.size();
+            auto width = grid[0].size();
+            for (unsigned j = height*i/num_cpus; j != height*(i+1)/num_cpus; ++j)
+            {
+                for (unsigned k = 0; k != width; ++k)
+                {
+                    Cell *cell = grid[j][k];
+                    cell->_call_reset()(cell);
+			        cell->prepare_process();
+                }
+            }
+        }, std::ref(grid));
+    }
+    for (auto &t : threads)
+    {
+        t.join();
+    }
+    //process
+    for (unsigned i = 0; i != num_cpus; ++i)
+    {
+        threads[i] = std::thread([i, num_cpus](grid_type &grid)
+        {
+            unsigned height = grid.size();
+            unsigned width = grid[0].size();
+            for (unsigned j = height*i/num_cpus; j != height*(i+1)/num_cpus; ++j)
+            {
+                for (unsigned k = 0; k != width; ++k)
+                {
+                    Cell *cell = grid[j][k];
+		            cell->_call_process()(grid, cell);
+                }
+            }
+        }, std::ref(grid));
+    }
+    for (auto &t : threads)
+    {
+        t.join();
+    }
 }
 
-void CAWorld::_step()
+void CAWorld::_step(unsigned i, unsigned j)
 {
-	for (auto &row : grid)
+    for (auto &row : grid)
 	{
 		for (Cell *cell : row)
 		{
@@ -405,17 +468,8 @@ void CAWorld::_step()
 			cell->prepare_process();
 		}
 	}
-	std::vector<Cell *> neighbors(diffX.size());
-	for (auto i = 0; i != height; ++i)
-	{
-		for (auto j = 0; j != width; ++j)
-		{
-		    Cell *cell = grid[i][j];
-
-			fill_neighbors(neighbors, i, j);
-			cell->_call_process()(cell, neighbors);
-		}
-	}
+	Cell *cell = grid[i][j];
+    cell->_call_process()(grid, cell);
 }
 
 void CAWorld::copy_grid(const CAWorld &rhs)

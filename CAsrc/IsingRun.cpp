@@ -16,8 +16,14 @@
 void runIsing()
 {
 
-	auto process = process_type([](Cell *self, std::vector<Cell*> neighbors)
+	auto process = process_type([](const grid_type &grid, Cell *self)
 	{
+		auto coord = get_coord(grid, self);
+		unsigned x = coord.first, y = coord.second;
+		std::vector<Cell*> neighbors = get_neighbors(grid, x, y);
+		int surrounding = countSurroundingCellsWithValue(neighbors, "wasOpen");
+
+
 		float beta = 0.5;
 		float J = 2;
 		state_value currentori = (*self)["ori"];
@@ -64,7 +70,7 @@ void runIsing()
 
 	Model model(world_param_type(50, 50, 6), { grid_param_type("electron", 100, process, reset, init) },1,getcolor);
 	CAWorld world(model);
-	world.step(10);
+	world.step(1,1);
 	world.print_world();
 
 

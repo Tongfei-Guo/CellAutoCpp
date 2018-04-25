@@ -40,6 +40,31 @@ private:
 	std::string message;
 };
 
+class get_coord_error : public std::exception
+{
+public:
+	get_coord_error(const std::string &&m) : message(std::move(m)){}
+	virtual const char* what() const throw()
+	{
+		return ("std::pair<unsigned, unsigned> get_coord(const grid_type &grid, Cell *cell) function call :" + message).c_str();
+	}
+private:
+	std::string message;
+};
+
+class CAWorld_param_error : public std::exception
+{
+public:
+	CAWorld_param_error(const std::string &&c, const std::string &&p) : ctor(std::move(c)), param(p){}
+	virtual const char* what() const throw()
+	{
+		return (ctor + " constructor's argument : " + param + " cannot be 0").c_str();
+	}
+private:
+	std::string ctor;
+	std::string param;
+};
+
 class internal_error : public std::exception
 {
 public:
