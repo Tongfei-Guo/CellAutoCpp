@@ -61,18 +61,35 @@ int main()
 
     Model model(world_param_type(500, 500, 6), { grid_param_type("electron", 100, process, reset, init) },1, getcolor);
     CAWorld world(model);
-    
+    world.save2file("isinglog.txt");
     
     using namespace std::chrono_literals;
     CARender render(500,500,palette);
     //world.step(1);
-    auto bitmap = world.print_world();
 
-    while (render.Renderworld(bitmap))
+    auto bitmap = world.print_world();
+    render.Renderworld(bitmap);
+    std::this_thread::sleep_for(500ms);    
+   
+    world.step(10);
+    bitmap = world.print_world();
+    render.Renderworld(bitmap);
+    std::this_thread::sleep_for(500ms);  
+   
+    world.loadfromfile("isinglog.txt");
+    bitmap = world.print_world();
+    render.Renderworld(bitmap);
+    std::this_thread::sleep_for(2000ms); 
+    
+    world.step(5);
+    bitmap = world.print_world();
+    render.Renderworld(bitmap);
+    std::this_thread::sleep_for(500ms);  
+    /*while (render.Renderworld(bitmap))
     {
         world.step(1);
         bitmap = world.print_world();
         std::this_thread::sleep_for(10ms);
-    }
+    }*/
 }
 
