@@ -15,7 +15,7 @@ class CAWorld
 friend std::vector<Cell*> get_neighbors(grid_type &grid, int x, int y);
 public:
     CAWorld(const Model &model);
-	CAWorld(const std::string &model_name);//no implemented, load built-in model
+    CAWorld(const CAWorld &rhs, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high);
 	CAWorld(const CAWorld &rhs);
 	CAWorld(CAWorld &&rhs) noexcept;
 	CAWorld &operator=(const CAWorld &rhs);
