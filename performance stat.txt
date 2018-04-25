@@ -9,3 +9,4 @@ Commit 3be72e7: 100 iterations, run 10 times, average time 0.148s
 Commit 7cc931e: 100 iterations, run 10 times, average time 0.150s, because make_unique<Cell>() allocates dynamic memory contiguously if that's my only program 
 running, in case of multiple program running, this could fail, and if that cause no memory locality, the performance would be 0.298s.
 Commit ccf38fe: 100 iterations, run 10 times, average time 0.151s.
+CCommit 3a27b4a: 100 iterations, run 10 times, average time 0.083s, due to parallelism.

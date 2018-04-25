@@ -40,8 +40,10 @@ public:
 private:
     unsigned width, height, grid_size;
 	grid_type grid;
-
+	bool empty_reset = 1;
+	unsigned buffersize;
 	void combine_error_check(const CAWorld &world, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high);
+	const type_name _add_type(std::pair<type_name, Model::grid_param_type_no_name> &pair);
     type_name type_initializer(const std::vector<std::pair<type_name, percentage>> &accum_dist);
 	void _forall_step();
 	void _step(unsigned x, unsigned y);

@@ -12,7 +12,7 @@ typedef std::vector<std::vector<Cell*>> grid_type;
 typedef std::vector<std::vector<Cell>> frame_type;
 typedef std::function<void(Cell *)> reset_type;
 typedef std::function<void(Cell *)> init_type;
-typedef std::function<void(grid_type &grid, Cell*)> process_type;
+typedef std::function<void(grid_type &, Cell*)> process_type;
 typedef std::function<int(Cell *)> getcolor_type;
 
 typedef std::tuple<type_name, percentage, process_type, reset_type, init_type> grid_param_type;

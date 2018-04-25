@@ -42,7 +42,6 @@ protected:
 	std::unordered_map<state_name, state_value> states; // TODO : state can be arbitrary type?
     type_name type;
     // auxiliary functions
-	static inline const type_name &_add_type(const std::pair<type_name, Model::grid_param_type_no_name> &pair);
 	inline void _set_type(const type_name &rhs_type);
 	inline const process_type&_call_process() const;
 	inline const reset_type&_call_reset() const;
@@ -136,17 +135,10 @@ inline const type_name &Cell::get_type() const
 	return type;
 }
 
-inline const type_name &Cell::_add_type(const std::pair<type_name, Model::grid_param_type_no_name> &pair)
-{
-	type_aux_funcs[pair.first] = std::make_tuple(std::get<1>(pair.second), std::get<2>(pair.second), std::get<3>(pair.second));
-	return pair.first;
-}
-
 inline void Cell::_set_type(const type_name &rhs_type)
 {
     type = rhs_type;
 }
-
 
 inline const process_type&Cell::_call_process() const
 {
