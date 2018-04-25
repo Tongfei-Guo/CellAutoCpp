@@ -9,6 +9,7 @@
 #include <iterator>
 #include <algorithm>
 #include <cctype>
+#include <thread>
 
 std::vector<std::function<int()>>
 CAWorld::diffX = std::vector<std::function<int()>>
@@ -412,22 +413,51 @@ type_name CAWorld::type_initializer(const std::vector<std::pair<type_name, perce
 
 void CAWorld::_forall_step()
 {
-	for (auto &row : grid)
-	{
-		for (Cell *cell : row)
-		{
-			cell->_call_reset()(cell);
-			cell->prepare_process();
-		}
-	}
-	for (auto i = 0; i != height; ++i)
-	{
-		for (auto j = 0; j != width; ++j)
-		{
-		    Cell *cell = grid[i][j];
-			cell->_call_process()(grid, cell);
-		}
-	}
+    unsigned num_cpus = std::thread::hardware_concurrency();
+    std::vector<std::thread> threads(num_cpus);
+    //reset
+	for (unsigned i = 0; i != num_cpus; ++i)
+    {
+        threads[i] = std::thread([i, num_cpus](grid_type &grid)
+        {
+            auto height = grid.size();
+            auto width = grid[0].size();
+            for (unsigned j = height*i/num_cpus; j != height*(i+1)/num_cpus; ++j)
+            {
+                for (unsigned k = 0; k != width; ++k)
+                {
+                    Cell *cell = grid[j][k];
+                    cell->_call_reset()(cell);
+			        cell->prepare_process();
+                }
+            }
+        }, std::ref(grid));
+    }
+    for (auto &t : threads)
+    {
+        t.join();
+    }
+    //process
+    for (unsigned i = 0; i != num_cpus; ++i)
+    {
+        threads[i] = std::thread([i, num_cpus](grid_type &grid)
+        {
+            unsigned height = grid.size();
+            unsigned width = grid[0].size();
+            for (unsigned j = height*i/num_cpus; j != height*(i+1)/num_cpus; ++j)
+            {
+                for (unsigned k = 0; k != width; ++k)
+                {
+                    Cell *cell = grid[j][k];
+		            cell->_call_process()(grid, cell);
+                }
+            }
+        }, std::ref(grid));
+    }
+    for (auto &t : threads)
+    {
+        t.join();
+    }
 }
 
 void CAWorld::_step(unsigned i, unsigned j)
