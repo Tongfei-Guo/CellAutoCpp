@@ -492,12 +492,15 @@ void CAWorld::_forall_step()
     {
         t.join();
     }
-    for(unsigned j = 0; j != height; ++j)
-        for(unsigned k = 0; k != width; ++k)
-        {
-            for(auto m: this->measures)
-                m->Update(grid[j][k]);
-        }
+    if (measures.size() != 0)
+    {
+        for(unsigned j = 0; j != height; ++j)
+            for(unsigned k = 0; k != width; ++k)
+            {
+                for(auto m: this->measures)
+                    m->Update(grid[j][k]);
+            }
+    }
 }
 
 void CAWorld::AddMeasureAndRun(CAMeasure* n){
