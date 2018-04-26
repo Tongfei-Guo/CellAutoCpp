@@ -8,8 +8,8 @@
 class Cell;
 int countSurroundingCellsWithValue(const std::vector<Cell *> &neighbors, const state_name &state);//count number of neighboring cells has states value greater than or equal to 1
 
-std::vector<Cell*> get_neighbors(const grid_type &grid, int x, int y);//find the neighbors of the cell given by grid[x][y]
+int getSurroundingCellsAverageValue(const std::vector<Cell *> &neighbors, const state_name &state);//get average value of neighboring cells
 
-std::pair<unsigned, unsigned> get_coord(const grid_type &grid, Cell *cell);//get coordinates of cell from grid
+std::vector<Cell*> get_neighbors(const grid_type &grid, int x, int y);//find the neighbors of the cell given by grid[x][y]
 
 #endif // CA_FUNCTIONS_H

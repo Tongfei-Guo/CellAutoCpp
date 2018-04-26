@@ -23,14 +23,14 @@ CAWorld::diffX = std::vector<std::function<int()>>
  [](){return 0; },
  [](){return 1; }}),
 CAWorld::diffY = std::vector<std::function<int()>>
-({[](){return 1; },
- [](){return 1; },
- [](){return 1; },
- [](){return 0; },
- [](){return 0; },
+({[](){return -1; },
  [](){return -1; },
  [](){return -1; },
- [](){return -1; }});
+ [](){return 0; },
+ [](){return 0; },
+ [](){return 1; },
+ [](){return 1; },
+ [](){return 1; }});
 
 CAWorld::CAWorld(const Model &model) :
 height(std::get<0>(model.world_param)),
@@ -56,6 +56,8 @@ getcolor(model.getcolor)
             for (auto j = 0; j != width; ++j)
             {
                 grid[i][j] = &cells[i*width+j];
+                grid[i][j]->x=i;
+                grid[i][j]->y=j;
             }
         }
 	}
@@ -68,6 +70,8 @@ getcolor(model.getcolor)
             for (auto j = 0; j != width; ++j)
             {
                 grid[i][j] = &cells[i*width+j];
+                grid[i][j]->x=i;
+                grid[i][j]->y=j;
             }
         }
 	}
@@ -80,6 +84,8 @@ getcolor(model.getcolor)
             {
                 cells[i*width+j].timestamp_resize(model.buffersize-1);
                 grid[i][j] = &cells[i*width+j];
+                grid[i][j]->x=i;
+                grid[i][j]->y=j;
             }
         }
 	}
