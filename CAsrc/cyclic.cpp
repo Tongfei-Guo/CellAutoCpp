@@ -18,7 +18,7 @@
 int main()
 {
     
-    CARender render(gridsize,gridsize,palette);
+    CARender render(50,50,palette);
     using namespace std::chrono_literals;
 
     auto process = process_type([] (const grid_type &grid, Cell *self)

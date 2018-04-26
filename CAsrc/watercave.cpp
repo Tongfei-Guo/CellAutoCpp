@@ -43,7 +43,7 @@ int main()
     {
         std::vector<Cell*> neighbors = get_neighbors(grid, self->x, self->y);
         int surrounding = countSurroundingCellsWithValue(neighbors, "wasOpen");
-        (*grid[self->x][self->y])["open"] = ((*grid[x][y])["wasOpen"] && surrounding >=4 || surrounding >= 6);
+        (*grid[self->x][self->y])["open"] = ((*grid[self->x][self->y])["wasOpen"] && surrounding >=4 || surrounding >= 6);
     });
     auto vaccumcave_reset = reset_type([](Cell *self)
     {
@@ -93,8 +93,9 @@ int main()
     //water cell has 9 water level. Higher level indicates more water in the cell.
     auto water_processs = process_type([](const grid_type &grid, Cell *self)
     {
-    	auto coord = get_coord(grid, self);
-        unsigned x = coord.first, y = coord.second;
+    	//auto coord = get_coord(grid, self);
+        unsigned x = self->x, y = self->y;
+        
         std::vector<Cell*> neighbors = get_neighbors(grid, x, y);
 
         int thislevel = (*self)["level"];
@@ -124,7 +125,7 @@ int main()
                 int amt = std::min(thislevel, (int)std::ceil( (9.0 - (*neighbors[i])["level"])/2.0 ) );
                 (*self)["level"] -= amt;
                 (*neighbors[i])["level"] += amt;
-                return;
+                //return;
         	}
         }
 
@@ -137,7 +138,7 @@ int main()
         		int amt = std::min(thislevel, (int)std::ceil( (9.0 - (*neighbors[i])["level"])/3.0 ) );
         		(*self)["level"] -= amt;
         		(*neighbors[i])["level"] += amt;
-        		return ;
+        		//return ;
         	}
         }
 
