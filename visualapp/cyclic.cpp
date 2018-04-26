@@ -25,7 +25,7 @@ int main()
     {127,0,255,255}, {223,0,255,255}, {255,0,191,255}, {255,0,96,255}
     };
     
-    CARender render(50,50,palette);
+    CARender render(100,100,palette);
     using namespace std::chrono_literals;
 
     auto process = process_type([] (const grid_type &grid, Cell *self)
@@ -51,11 +51,11 @@ int main()
 
     //CAWorld world1(Model(world_param_type(100, 50, 6), { grid_param_type("Wall", 100, process, reset, init) },0));
     //CAWorld world2(Model(world_param_type(100, 50, 6), { grid_param_type("Wall", 100, process, reset, init) },1));
-    CAWorld world(Model(world_param_type(50, 50, 6), { grid_param_type("Cyclic", 100, process, reset, init) },1,getcolor));
+    CAWorld world(Model(world_param_type(100, 100, 6), { grid_param_type("Cyclic", 100, process, reset, init) },1,getcolor));
     //world.AddMeasure(new CADistributionMeasure());
 	auto start = std::chrono::high_resolution_clock::now();
 
-    for(int i = 0; i < 10000; i++)
+    for(int i = 0; i < 1000; i++)
     {
         world.forall_step(1);
         auto bitmap = world.print_world();

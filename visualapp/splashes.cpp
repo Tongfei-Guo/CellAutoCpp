@@ -9,15 +9,9 @@
 #include <iostream>
 #include <cmath>
 
-/*
-struct bitcolor
-{
-	unsigned char R;
-	unsigned char G;
-	unsigned char B;
-	unsigned char alpha;
-} ;
-*/
+//render:
+#include <thread>
+#include <CArender.hpp>
 
 #define V 100000000 //1e8
 
@@ -28,13 +22,16 @@ int main()
     std::vector<int> colors;
 
     for(int i=0; i<64; i++){
-        palette.push_back(bitcolor{(unsigned char)89, (unsigned char)125, (unsigned char)206, (unsigned char)(255/64*i)});
+        palette.push_back(bitcolor{(unsigned char)20, (unsigned char)40, (unsigned char)186, (unsigned char)(255/64*i )});
         colors.push_back(63-i);
     }
 
     int W=96*2;
     int H=64*2;
     double pi=acos(-1.0);
+    
+    CARender render(W,H, palette);
+    using namespace std::chrono_literals;  
 
     auto process = process_type([] (const grid_type &grid, Cell *self)
     {
@@ -77,9 +74,16 @@ int main()
         return colors[(int)(ret*colors.size())];
     });
 
-    CAWorld world(Model(world_param_type(W, H, 6), { grid_param_type("water", 100, process, reset, init) },1));
+    CAWorld world(Model(world_param_type(W, H, 6), { grid_param_type("water", 100, process, reset, init) },1,getcolor));
 	//auto start = std::chrono::high_resolution_clock::now();
-	world.forall_step(1000);
+    //world.forall_step(1000);
+    for(int i = 0; i < 1000; i++)
+    {
+        world.forall_step(1);
+        auto bitmap = world.print_world();
+        if(!render.Renderworld(bitmap)) break;
+    }
+    
     //auto elapsed = std::chrono::high_resolution_clock::now() - start;
     //auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed).count();
     //std::cout << nanoseconds << "nanoseconds\n";

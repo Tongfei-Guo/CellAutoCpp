@@ -22,7 +22,7 @@ RENOBJ = $(RENDER:.cpp=.o)
 _GLADDEN = glad.c 
 GLADDEN = $(patsubst %,$(_RENDDIR)/%,$(_GLADDEN))
 
-MAIN = ising
+MAIN = splashes
 _MAINSRC = $(patsubst %,$(MAIN).%,cpp)
 _MAINDIR = visualapp
 MAINSRC = $(patsubst %,$(_MAINDIR)/%,$(_MAINSRC))

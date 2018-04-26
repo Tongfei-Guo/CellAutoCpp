@@ -6,9 +6,24 @@
 #include "CATypes.h"
 #include "CAFunctions.h"
 #include <chrono>
+
+//render:
+#include <thread>
+#include <CArender.hpp>
+
 #include <iostream>
+
 int main()
 {
+
+    std::vector<bitcolor> palette = {
+    {68, 36, 52, 255},
+    {255, 255, 255, 255}
+    };
+    
+    CARender render(96, 64, palette);
+    using namespace std::chrono_literals;   
+
     auto process = process_type([] (const grid_type &grid, Cell *self)
     {
         std::vector<Cell*> neighbors = get_neighbors(grid, self->x, self->y);
@@ -38,15 +53,15 @@ int main()
             return 0;
     });
 
-/*
-    std::vector<bitcolor> palette = {
-    {68, 36, 52, 255},
-    {255, 255, 255, 255}
-    };
-    */
 
     CAWorld world(Model(world_param_type(96, 64, 6), { grid_param_type("living", 100, process, reset, init) },1, getcolor));
-	world.forall_step(100);
+    for(int i = 0; i < 1000; i++)
+    {
+        world.forall_step(1);
+        auto bitmap = world.print_world();
+        if(!render.Renderworld(bitmap)) break;
+    }
+
 
 	return 0;
 }
