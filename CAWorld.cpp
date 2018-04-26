@@ -59,6 +59,7 @@ getcolor(model.getcolor)
             }
         }
 	}
+
 	else if (model.buffersize == 0)
 	{
 	    CellHistUnbounded *cells = new CellHistUnbounded[height*width];
@@ -586,4 +587,40 @@ void CAWorld::delete_grid()
         }
 
     }
+}
+
+std::vector<std::vector<std::string>> CAWorld::getgridref(gettypeind_type gettypeind)
+{
+    std::vector<std::vector<std::string>> typeind(height,std::vector<std::string>(width));
+
+    for(int i = 0; i < height; i++)
+    {
+    	for(int j = 0; j < width; j++)
+    	{
+            typeind[i][j] = gettypeind(grid[i][j]);
+    	}
+    }
+    return typeind;
+}
+
+
+void CAWorld::initgridfromgridref(std::vector<std::vector<std::string>> & gridref)
+{
+	//define types for cells according to gridref
+	for (int i = 0; i != height; ++i)
+	{
+		for (int j = 0; j != width; ++j)
+		{
+			grid[i][j]->_set_type(gridref[i][j]);
+		}
+	}
+
+	//reinitialize the grid
+	for (auto &row : grid)
+	{
+		for (Cell *cell : row)
+		{
+			cell->_call_init()(cell);
+		}
+	}
 }

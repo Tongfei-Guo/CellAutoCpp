@@ -15,6 +15,18 @@ class CAWorld
 {
 friend std::vector<Cell*> get_neighbors(grid_type &grid, int x, int y);
 public:
+    enum neighborindex
+	{
+    	TOPLEFT = 0,
+    	TOP = 1,
+		TOPRIGHT = 2,
+		LEFT = 3,
+		RIGHT = 4,
+		BOTTOMLEFT = 5,
+		BOTTOM = 6,
+		BOTTOMRIGHT = 7
+	};
+
     CAWorld(const Model &model);
     CAWorld(const CAWorld &rhs, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high);
 	CAWorld(const CAWorld &rhs);
@@ -29,6 +41,10 @@ public:
 
     void save2file(const char * filename); //save the type and states of Cells in grid into file
     void loadfromfile(const char * filename); //load the type and states into Cells in grid from file
+
+    std::vector<std::vector<std::string>> getgridref(gettypeind_type gettypeind); //get the an array indicates type for further init
+    void initgridfromgridref(std::vector<std::vector<std::string>> & gridref); //initialize gird from the girdref generated from the getgridref
+
 
     CAWorld &combine(const CAWorld &world, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high);
 	CAWorld &combine(CAWorld &&world, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high);
