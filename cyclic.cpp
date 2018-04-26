@@ -16,11 +16,14 @@ int main()
         bool changing=false;
         for(auto n: neighbors)
             if (n!=NULL)
-                changing=changing||((*n)["state"]==next);
+                changing=changing||((*n)["oldState"]==next);
         if (changing)
             (*self)["state"]=next;
     });
-    auto reset = reset_type();
+    auto reset = reset_type([](Cell *self)
+    {
+        (*self)["oldState"]=(*self)["state"];
+    });
     auto init = init_type([](Cell *self)
     {
         (*self)["state"] = rand()%16;
@@ -40,19 +43,9 @@ int main()
     };
     */
 
-    //CAWorld world1(Model(world_param_type(100, 50, 6), { grid_param_type("Wall", 100, process, reset, init) },0));
-    //CAWorld world2(Model(world_param_type(100, 50, 6), { grid_param_type("Wall", 100, process, reset, init) },1));
-    CAWorld world(Model(world_param_type(96, 64, 6), { grid_param_type("Cyclic", 100, process, reset, init) },1));
-    //world.AddMeasure(new CADistributionMeasure());
-	auto start = std::chrono::high_resolution_clock::now();
+    CAWorld world(Model(world_param_type(100, 100, 6), { grid_param_type("Cyclic", 100, process, reset, init) },1));
 	world.forall_step(1000);
-    auto elapsed = std::chrono::high_resolution_clock::now() - start;
-    auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed).count();
-    std::cout << nanoseconds << "nanoseconds\n";
-    auto timestamp = world.get_timestamps();
-    world.print_test(timestamp, 0);
     world.AddMeasureAndRun(new CADistributionMeasure("Final Dist"));
-
     for(auto m: world.GetMeasures())
         std::cout<<"========="<<m->GetName()<<"========="<<std::endl<<m->Str_All()<<std::endl;
 

@@ -24,11 +24,11 @@ struct bitcolor
 int main()
 {
 
-    std::vector<bitcolor> palette = {};
+    //std::vector<bitcolor> palette = {};
     std::vector<int> colors;
 
     for(int i=0; i<64; i++){
-        palette.push_back(bitcolor{(unsigned char)89, (unsigned char)125, (unsigned char)206, (unsigned char)(255/64*i)});
+        //palette.push_back(bitcolor{(unsigned char)89, (unsigned char)125, (unsigned char)206, (unsigned char)(255/64*i)});
         colors.push_back(63-i);
     }
 
