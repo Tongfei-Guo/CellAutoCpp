@@ -9,6 +9,7 @@
 #include <iostream>
 #include <cmath>
 
+/*
 struct bitcolor
 {
 	unsigned char R;
@@ -16,6 +17,7 @@ struct bitcolor
 	unsigned char B;
 	unsigned char alpha;
 } ;
+*/
 
 #define V 100000000 //1e8
 
@@ -81,10 +83,10 @@ int main()
     //auto elapsed = std::chrono::high_resolution_clock::now() - start;
     //auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed).count();
     //std::cout << nanoseconds << "nanoseconds\n";
-    world.AddMeasureAndRun(new CADistributionMeasure("Final Dist"));
+    //world.AddMeasureAndRun(new CADistributionMeasure("Final Dist"));
 
-    for(auto m: world.GetMeasures())
-        std::cout<<"========="<<m->GetName()<<"========="<<std::endl<<m->Str_All()<<std::endl;
+    //for(auto m: world.GetMeasures())
+    //    std::cout<<"========="<<m->GetName()<<"========="<<std::endl<<m->Str_All()<<std::endl;
 
 	return 0;
 }
