@@ -31,13 +31,13 @@ int main()
     auto process = process_type([] (const grid_type &grid, Cell *self)
     {
         std::vector<Cell*> neighbors = get_neighbors(grid, self->x, self->y);
-        int next=((*grid[self->x][self->y])["state"]+rand()%2)%16;
+        int next=((*self)["state"]+1)%16;
         bool changing=false;
         for(auto n: neighbors)
             if (n!=NULL)
                 changing=changing||((*n)["state"]==next);
         if (changing)
-            (*grid[self->x][self->y])["state"]=next;
+            (*self)["state"]=next;
     });
     auto reset = reset_type();
     auto init = init_type([](Cell *self)
