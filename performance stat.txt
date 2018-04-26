@@ -29,3 +29,7 @@ Commit 48b1967: 100 iterations, run 10 times, average time 6.81s.
 Commit 6311a08: 100 iterations, run 10 times, average time 7.10s.
 Commit 327aac0: 100 iterations, run 10 times, average time 6.84s.
 Commit 93182ae: 100 iterations, run 10 times, average time 6.42s.
+
+Ising: 1000000 times, with reset optimization 3.68s.
+                      without                 5414s.
+                      
