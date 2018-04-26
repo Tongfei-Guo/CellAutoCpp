@@ -9,11 +9,16 @@
 #include <iostream>
 #include <cmath>
 
+//render:
+#include <thread>
+#include <CArender.hpp>
+
+#include <iostream>
 #define V 100000000 //1e8
 
 int main()
 {
-
+ 
     std::vector<int> colors(64);
 	int index = 0;
 	for (; index < 18; ++index) { colors[index] = 1; }
@@ -34,6 +39,17 @@ int main()
     int W=144*2;
     int H=96*2;
     double pi=acos(-1.0);
+
+
+    std::vector<bitcolor> palette = {
+    {34,10,21,255}, {68,17,26,255}, {123,16,16,255},
+    {190,45,16,255}, {244,102,20,255}, {254,212,97,255}
+    };
+
+    CARender render(W,H,palette);
+    using namespace std::chrono_literals;
+
+
 
     auto process = process_type([] (const grid_type &grid, Cell *self)
     {
@@ -79,35 +95,42 @@ v = Math.min(1.0, Math.max(0.0, v));
 
 return colors[Math.floor(colors.length * v)];
 */
+         //std::cout<<(*self)["value"]<<std::endl;
+         //return 1;
         double ret=(*self)["value"]*1.0/V+0.5+sin(pi*self->x/W)*0.04+sin(pi*self->y/H)*0.04-0.05;
+        
         ret=fmin(0.9999, fmax(0.0, ret));
         return colors[(int)(ret*colors.size())];
     });
 
-/*
 
-    std::vector<bitcolor> palette = {
-    {34,10,21,255}, {68,17,26,255}, {123,16,16,255},
-    {190,45,16,255}, {244,102,20,255}, {254,212,97,255}
-    };
 
-*/
+
+
 
     //CAWorld world1(Model(world_param_type(100, 50, 6), { grid_param_type("Wall", 100, process, reset, init) },0));
     //CAWorld world2(Model(world_param_type(100, 50, 6), { grid_param_type("Wall", 100, process, reset, init) },1));
-    CAWorld world(Model(world_param_type(W, H, 6), { grid_param_type("lava", 100, process, reset, init) },1));
+    CAWorld world(Model(world_param_type(W, H, 6), { grid_param_type("lava", 100, process, reset, init) },1,getcolor));
     //world.AddMeasure(new CADistributionMeasure());
-	auto start = std::chrono::high_resolution_clock::now();
-	world.forall_step(1000);
+    auto start = std::chrono::high_resolution_clock::now();
+
+    for(int i = 0; i < 1000; i++)
+    {
+        world.forall_step(1);
+        	auto bitmap = world.print_world();
+                if(!render.Renderworld(bitmap)) break;
+    }
+
+	//world.forall_step(1000);
     auto elapsed = std::chrono::high_resolution_clock::now() - start;
     auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed).count();
     std::cout << nanoseconds << "nanoseconds\n";
     auto timestamp = world.get_timestamps();
-    world.print_test(timestamp, 0);
+  //  world.print_test(timestamp, 0);
     //world.AddMeasureAndRun(new CADistributionMeasure("Final Dist"));
 
-    for(auto m: world.GetMeasures())
-        std::cout<<"========="<<m->GetName()<<"========="<<std::endl<<m->Str_All()<<std::endl;
+    //for(auto m: world.GetMeasures())
+     //   std::cout<<"========="<<m->GetName()<<"========="<<std::endl<<m->Str_All()<<std::endl;
 
-	return 0;
+//	return 0;
 }

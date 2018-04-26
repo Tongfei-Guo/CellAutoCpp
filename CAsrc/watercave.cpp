@@ -8,6 +8,7 @@
 #include <chrono>
 #include <iostream>
 #include <cmath>
+#include "CAMeasure.h"
 
 //render:
 #include <thread>
@@ -29,9 +30,10 @@ int main()
                 {89, 125, 206, 5*255/9},   //5
                 {89, 125, 206, 6*255/9},   //6
                 {89, 125, 206, 7*255/9},   //7
-                {89, 125, 206, 8*255/9},   //8  
-                {255,255,255,255},         //9
-                {0,0,0,255}                //10
+                {89, 125, 206, 8*255/9},   //8 
+                {89, 125, 206, 9*255/9},   //9  
+                {255,255,255,255},         //10
+                {0,0,0,255}                //11
     };
 
     int gridsize = 100;
@@ -57,9 +59,9 @@ int main()
     auto vaccum_getcolor = getcolor_type([](Cell *self)
     {
         if((*self)["open"] == 1)
-	    return 9;
-	else
 	    return 10;
+	else
+	    return 11;
     });
 
     CAWorld vaccumcave(Model(world_param_type(gridsize, gridsize, 6), { grid_param_type("Wall", 100, vaccumcave_process, vaccumcave_reset, vaccumcave_init) },0,vaccum_getcolor));
@@ -118,14 +120,14 @@ int main()
         for(int i = 5; i < 8; i++)
         {
         	if( i!=CAWorld::BOTTOM &&
-        		neighbors[i] != nullptr &&
-				thislevel != 0 &&
-				neighbors[i]->get_type()=="water" && (*neighbors[i])["level"] < 9)
+        	    neighbors[i] != nullptr &&
+		    thislevel != 0 &&
+		    neighbors[i]->get_type()=="water" && (*neighbors[i])["level"] < 9)
         	{
                 int amt = std::min(thislevel, (int)std::ceil( (9.0 - (*neighbors[i])["level"])/2.0 ) );
                 (*self)["level"] -= amt;
                 (*neighbors[i])["level"] += amt;
-                //return;
+                return;
         	}
         }
 
@@ -138,7 +140,7 @@ int main()
         		int amt = std::min(thislevel, (int)std::ceil( (9.0 - (*neighbors[i])["level"])/3.0 ) );
         		(*self)["level"] -= amt;
         		(*neighbors[i])["level"] += amt;
-        		//return ;
+        		return ;
         	}
         }
 
@@ -156,7 +158,7 @@ int main()
         
         if(self->get_type()=="Wall")
         {  
-            return 10;
+            return 11;
         }
         else
         {
@@ -173,6 +175,8 @@ int main()
     CAWorld fullcave(watercavemodel);
     fullcave.initgridfromgridref(cavemap);
 
+    fullcave.AddMeasure(new CADistributionMeasure());
+
     //fullcave.forall_step(1);
 
     bitmap = fullcave.print_world();
@@ -180,8 +184,12 @@ int main()
     {
         fullcave.forall_step(1);
         bitmap = fullcave.print_world();
+        for (auto m: fullcave.GetMeasures())
+	    std::cout<<m->Str_Current()<<std::endl;
         if(!render.Renderworld(bitmap)) break;
     }
+
+	
     
     std::this_thread::sleep_for(2000ms);
     std::cout<<"end of program"<<std::endl;

@@ -5,7 +5,7 @@ INCLUDES = -I depend/glm-0.9.9-a2 -I depend/glad -I ./render -I ./src
 CMPORDER = -march=native -g
 
 
-_CA = CAWorld.cpp Cell.cpp Model.cpp cyclic.cpp CAFunctions.cpp
+_CA = CAWorld.cpp Cell.cpp Model.cpp lava.cpp CAFunctions.cpp
 _CADIR = CAsrc
 CA = $(patsubst %,$(_CADIR)/%,$(_CA))
 CAOBJ = $(CA:.cpp=.o)
