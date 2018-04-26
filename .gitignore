@@ -1,6 +1,4 @@
-makefile
-*.o
-*~
-cave
-cyclic
-main
+makefile1
+output.txt
+performance stat.txt
+isinglog.txt

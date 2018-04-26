@@ -1,11 +1,11 @@
 CC = g++
 
-INCLUDES = -I depend/glm-0.9.9-a2 -I depend/glad -I ./render -I ./src
+INCLUDES = -I depend/glm-0.9.9-a2 -I depend/glad -I ./render -I ./CAsrc 
 
 CMPORDER = -march=native -g
 
 
-_CA = CAWorld.cpp Cell.cpp Model.cpp ising.cpp CAFunctions.cpp
+_CA = CAWorld.cpp Cell.cpp Model.cpp CAFunctions.cpp
 _CADIR = CAsrc
 CA = $(patsubst %,$(_CADIR)/%,$(_CA))
 CAOBJ = $(CA:.cpp=.o)
@@ -23,6 +23,9 @@ _GLADDEN = glad.c
 GLADDEN = $(patsubst %,$(_RENDDIR)/%,$(_GLADDEN))
 
 MAIN = ising
+_MAINSRC = $(patsubst %,$(MAIN).%,cpp)
+_MAINDIR = visualapp
+MAINSRC = $(patsubst %,$(_MAINDIR)/%,$(_MAINSRC))
 
 .PHONY: depend clean
 
@@ -30,7 +33,7 @@ all:    $(MAIN)
 	@echo drone_sim has been compiled
 
 $(MAIN): $(CAOBJ) $(RENOBJ)
-	$(CC) $(CMPORDER) $(INCLUDES) -std=c++14 -o $(MAIN) $(GLADDEN) $(CAOBJ) $(RENOBJ) $(RENDDEPEN)
+	$(CC) $(CMPORDER) $(INCLUDES) $(MAINSRC) -std=c++14 -o $(MAIN) $(GLADDEN) $(CAOBJ) $(RENOBJ) $(RENDDEPEN)
 
 $(_CADIR)/%.o: $(_CADIR)/%.cpp
 	$(CC) $(INCLUDES) $(CMPORDER)  -std=c++14   -c -o $@ $<
@@ -42,5 +45,5 @@ clean:
 	$(RM) *.o *~ $(MAIN)
 
 cleanobj:
-	$(RM)  $(RENOBJ) $(CAOBJ)
+	$(RM)  $(RENOBJ) $(CAOBJ) 
 
