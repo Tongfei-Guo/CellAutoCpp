@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <vector>
 #include <cstdlib>
+#include <map>
 
 class CAMeasure{
 
@@ -72,7 +73,10 @@ private:
                 ret+=prefix+std::string("\t");
                 ret+=std::string("State Name = ")+(std::string)b.first+std::string(" : ");
                 bool first=true;
-                for(const auto &c: b.second){
+                std::map<state_value,int> out_map;
+                for(const auto &c: b.second)
+                    out_map[c.first]=c.second;
+                for(const auto &c: out_map){
                     if (!first)
                         ret+=", ";
                     ret+=std::string("(\"")+std::to_string((int)c.first)+std::string("\"=")+std::to_string((int)c.second)+std::string(")");
