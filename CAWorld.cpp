@@ -35,6 +35,7 @@ CAWorld::CAWorld(const Model &model) :
 height(std::get<0>(model.world_param)),
 width(std::get<1>(model.world_param)),
 grid_size(std::get<2>(model.world_param)),
+buffersize(model.buffersize),
 getcolor(model.getcolor)
 {
     //error check on world_param.
@@ -80,15 +81,28 @@ getcolor(model.getcolor)
             }
         }
 	}
-	/*for (auto &row : grid)
-	    for (Cell *cell : row)
-	        std::cout << cell << std::endl;*/
+    for (const std::pair<type_name, Model::grid_param_type_no_name> &pair : model.grid_types)
+	{
+	    process_type process([](grid_type &grid, Cell* cell){});
+	    reset_type reset([](Cell *cell){});
+	    init_type init([](Cell *cell){});
+        if (std::get<1>(pair.second) != nullptr)
+            process = std::get<1>(pair.second);
+        if (std::get<2>(pair.second) != nullptr)
+        {
+            reset = std::get<2>(pair.second);
+            empty_reset = 0;
+        }
+        if (std::get<3>(pair.second) != nullptr)
+            init = std::get<3>(pair.second);
+        Cell::type_aux_funcs[pair.first] = std::make_tuple(process, reset, init);
+	}
 	//initilize cell tpyes, states ,etc in the grid.
 	std::vector<std::pair<type_name, percentage>> accum_dist(model.grid_types.size());
 	percentage percent_sum = 0;
 	for (const std::pair<type_name, Model::grid_param_type_no_name> &pair : model.grid_types)
 	{
-		type_name type = Cell::_add_type(pair);
+		type_name type = pair.first;
 		percentage percent = std::get<0>(pair.second);
 		if (percent > 100) // error-check, percentage is unsigned, don't check for < 0
 		    throw percentage_error("Model : grid_type : " + type + " has a percentage value of " + std::to_string(percent));
@@ -104,6 +118,7 @@ getcolor(model.getcolor)
 			grid[i][j]->_set_type(type_initializer(accum_dist));
 		}
 	}
+
 	for (auto &row : grid)// don't combine this for loop with the one above, because some init protentially needs the type of neighboring grids.
 	{
 		for (Cell *cell : row)
@@ -111,7 +126,6 @@ getcolor(model.getcolor)
 			cell->_call_init()(cell);
 		}
 	}
-
 }
 
 CAWorld::CAWorld(const CAWorld &rhs): height(rhs.height), width(rhs.width), grid_size(rhs.grid_size)
@@ -160,8 +174,11 @@ CAWorld &CAWorld::forall_step(unsigned steps)
 
 CAWorld &CAWorld::step(unsigned x, unsigned y)
 {
-	if ((x > height-1) || (y > width-1))
-	_step(x, y);
+	if (x > height-1)
+	    throw std::out_of_range("CAWorld &CAWorld::step(unsigned x, unsigned y) function call : x = " + std::to_string(x) + ", exceeds grid height = " + std::to_string(height));
+    else if (y > width-1)
+        throw std::out_of_range("CAWorld &CAWorld::step(unsigned x, unsigned y) function call : y = " + std::to_string(y) + ", exceeds grid width = " + std::to_string(width));
+    _step(x, y);
 	return (*this);
 }
 
@@ -298,12 +315,12 @@ CAWorld &CAWorld::combine(const CAWorld &world, unsigned r_low, unsigned r_high,
 		for (auto j = c_low; j != c_high; ++j)
 		{
 		    Cell *curr = world.grid[i - r_low][j - c_low]->_clone();
-		    if (dynamic_cast<CellHistBounded*>(curr) != nullptr)
-		        grid[i][j]->_move(dynamic_cast<CellHistBounded*>(curr));
-			else if (dynamic_cast<CellHistUnbounded*>(curr) != nullptr)
-			    grid[i][j]->_move(dynamic_cast<CellHistUnbounded*>(curr));
+		    if (world.buffersize == 1)
+		        grid[i][j]->_move(curr);
+            else if (world.buffersize == 0)
+                grid[i][j]->_move(dynamic_cast<CellHistUnbounded*>(curr));
             else
-                grid[i][j]->_move(curr);
+		        grid[i][j]->_move(dynamic_cast<CellHistBounded*>(curr));
 		}
 	}
 	auto frames_after = grid[r_low][c_low]->timestamp_size();
@@ -313,6 +330,7 @@ CAWorld &CAWorld::combine(const CAWorld &world, unsigned r_low, unsigned r_high,
         {
             for (auto j = 0; j != width; ++j)
             {
+                //std::cout << i << " " << j << std::endl;
                 grid[i][j]->timestamp_resize(frames_after);
             }
         }
@@ -329,12 +347,12 @@ CAWorld &CAWorld::combine(CAWorld &&world, unsigned r_low, unsigned r_high, unsi
 		for (auto j = c_low; j != c_high; ++j)
 		{
 		    Cell *curr = std::move(world.grid[i - r_low][j - c_low])->_clone();
-		    if (dynamic_cast<CellHistBounded*>(curr) != nullptr)
-		        grid[i][j]->_move(dynamic_cast<CellHistBounded*>(curr));
-			else if (dynamic_cast<CellHistUnbounded*>(curr) != nullptr)
-			    grid[i][j]->_move(dynamic_cast<CellHistUnbounded*>(curr));
+		    if (world.buffersize == 1)
+		        grid[i][j]->_move(curr);
+            else if (world.buffersize == 0)
+                grid[i][j]->_move(dynamic_cast<CellHistUnbounded*>(curr));
             else
-                grid[i][j]->_move(curr);
+		        grid[i][j]->_move(dynamic_cast<CellHistBounded*>(curr));
 		}
 	}
 	auto frames_after = grid[r_low][c_low]->timestamp_size();
@@ -393,9 +411,9 @@ void CAWorld::combine_error_check(const CAWorld &world, unsigned r_low, unsigned
 	else if (world.width != c_high - c_low)
 		throw combine_error("CAWorld &CAWorld::combine(const CAWorld &, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high) funciton call : input CAWorld width " + std::to_string(world.width) + " does not agree with input lower bound " + std::to_string(c_low) + " and input upper bound " + std::to_string(c_high));
 	else if (r_high > this->height)
-		throw combine_error("CAWorld &CAWorld::combine(const CAWorld &, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high) funciton call : r_high = " + std::to_string(r_high) + "out of bound: " + std::to_string(this->height - 1));
+		throw combine_error("CAWorld &CAWorld::combine(const CAWorld &, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high) funciton call : r_high = " + std::to_string(r_high) + "out of bound: " + std::to_string(this->height ));
 	else if (r_high > this->width)
-		throw combine_error("CAWorld &CAWorld::combine(const CAWorld &, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high) funciton call : c_high = " + std::to_string(c_high) + "out of bound: " + std::to_string(this->width - 1));
+		throw combine_error("CAWorld &CAWorld::combine(const CAWorld &, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high) funciton call : c_high = " + std::to_string(c_high) + "out of bound: " + std::to_string(this->width ));
 }
 
 type_name CAWorld::type_initializer(const std::vector<std::pair<type_name, percentage>> &accum_dist)
@@ -415,27 +433,30 @@ void CAWorld::_forall_step()
 {
     unsigned num_cpus = std::thread::hardware_concurrency();
     std::vector<std::thread> threads(num_cpus);
-    //reset
-	for (unsigned i = 0; i != num_cpus; ++i)
+    if (buffersize != 1 || empty_reset != 1) // optimization : if no buffer and all reset functions for all types are empty, then skip the loop.
     {
-        threads[i] = std::thread([i, num_cpus](grid_type &grid)
+        //reset
+        for (unsigned i = 0; i != num_cpus; ++i)
         {
-            auto height = grid.size();
-            auto width = grid[0].size();
-            for (unsigned j = height*i/num_cpus; j != height*(i+1)/num_cpus; ++j)
+            threads[i] = std::thread([i, num_cpus](grid_type &grid)
             {
-                for (unsigned k = 0; k != width; ++k)
+                auto height = grid.size();
+                auto width = grid[0].size();
+                for (unsigned j = height*i/num_cpus; j != height*(i+1)/num_cpus; ++j)
                 {
-                    Cell *cell = grid[j][k];
-                    cell->_call_reset()(cell);
-			        cell->prepare_process();
+                    for (unsigned k = 0; k != width; ++k)
+                    {
+                        Cell *cell = grid[j][k];
+                        cell->_call_reset()(cell);
+                        cell->prepare_process();
+                    }
                 }
-            }
-        }, std::ref(grid));
-    }
-    for (auto &t : threads)
-    {
-        t.join();
+            }, std::ref(grid));
+        }
+        for (auto &t : threads)
+        {
+            t.join();
+        }
     }
     //process
     for (unsigned i = 0; i != num_cpus; ++i)
@@ -462,14 +483,17 @@ void CAWorld::_forall_step()
 
 void CAWorld::_step(unsigned i, unsigned j)
 {
-    for (auto &row : grid)
-	{
-		for (Cell *cell : row)
-		{
-			cell->_call_reset()(cell);
-			cell->prepare_process();
-		}
-	}
+    if (buffersize != 1 || empty_reset != 1)
+    {
+        for (auto &row : grid)
+        {
+            for (Cell *cell : row)
+            {
+                cell->_call_reset()(cell);
+                cell->prepare_process();
+            }
+        }
+    }
 	Cell *cell = grid[i][j];
     cell->_call_process()(grid, cell);
 }
@@ -477,33 +501,7 @@ void CAWorld::_step(unsigned i, unsigned j)
 void CAWorld::copy_grid(const CAWorld &rhs)
 {
     grid = grid_type(height, std::vector<Cell*>(width));
-    if (dynamic_cast<CellHistUnbounded*>(rhs.grid[0][0]) != nullptr) //grid cell type is CellHistUnbounded
-    {
-        CellHistUnbounded *cells = new CellHistUnbounded[height*width];
-        CellHistUnbounded *rhs_cells = dynamic_cast<CellHistUnbounded*>(rhs.grid[0][0]);
-	    for (auto i = 0; i != height; ++i)
-        {
-            for (auto j = 0; j != width; ++j)
-            {
-                cells[i*width+j] = rhs_cells[i*width+j];
-                grid[i][j] = &cells[i*width+j];
-            }
-        }
-    }
-    else if (dynamic_cast<CellHistBounded*>(rhs.grid[0][0]) != nullptr) //grid cell type is CellHistBounded
-    {
-        CellHistBounded *cells = new CellHistBounded[height*width];
-        CellHistBounded *rhs_cells = dynamic_cast<CellHistBounded*>(rhs.grid[0][0]);
-	    for (auto i = 0; i != height; ++i)
-        {
-            for (auto j = 0; j != width; ++j)
-            {
-                cells[i*width+j] = rhs_cells[i*width+j];
-                grid[i][j] = &cells[i*width+j];
-            }
-        }
-    }
-    else//grid cell type is Cell
+    if (rhs.buffersize == 1)//grid cell type is Cell
     {
         Cell *cells = new Cell[height*width];
         Cell *rhs_cells = rhs.grid[0][0];
@@ -516,26 +514,54 @@ void CAWorld::copy_grid(const CAWorld &rhs)
             }
         }
     }
+    if (rhs.buffersize == 0) //grid cell type is CellHistUnbounded
+    {
+        CellHistUnbounded *cells = new CellHistUnbounded[height*width];
+        CellHistUnbounded *rhs_cells = dynamic_cast<CellHistUnbounded*>(rhs.grid[0][0]);
+	    for (auto i = 0; i != height; ++i)
+        {
+            for (auto j = 0; j != width; ++j)
+            {
+                cells[i*width+j] = rhs_cells[i*width+j];
+                grid[i][j] = &cells[i*width+j];
+            }
+        }
+    }
+    else  //grid cell type is CellHistBounded
+    {
+        CellHistBounded *cells = new CellHistBounded[height*width];
+        CellHistBounded *rhs_cells = dynamic_cast<CellHistBounded*>(rhs.grid[0][0]);
+	    for (auto i = 0; i != height; ++i)
+        {
+            for (auto j = 0; j != width; ++j)
+            {
+                cells[i*width+j] = rhs_cells[i*width+j];
+                grid[i][j] = &cells[i*width+j];
+            }
+        }
+    }
+
 }
 
 void CAWorld::delete_grid()
 {
     if (height != 0 && width != 0)
     {
-        if (dynamic_cast<CellHistUnbounded*>(grid[0][0]) != nullptr) //grid cell type is CellHistUnbounded
-        {
-            CellHistUnbounded *lhs_cells = dynamic_cast<CellHistUnbounded*>(grid[0][0]);
-            delete [] lhs_cells;
-        }
-        else if (dynamic_cast<CellHistBounded*>(grid[0][0]) != nullptr) //grid cell type is CellHistUnbounded
-        {
-            CellHistBounded *lhs_cells = dynamic_cast<CellHistBounded*>(grid[0][0]);
-            delete [] lhs_cells;
-        }
-        else //grid cell type is Cell
+        if (buffersize == 1) //grid cell type is Cell
         {
             Cell *lhs_cells = grid[0][0];
             delete [] lhs_cells;
         }
+        else if (buffersize == 0) //grid cell type is CellHistUnbounded
+        {
+            CellHistUnbounded *lhs_cells = dynamic_cast<CellHistUnbounded*>(grid[0][0]);
+            delete [] lhs_cells;
+        }
+        else //grid cell type is CellHistUnbounded
+        {
+            CellHistBounded *lhs_cells = dynamic_cast<CellHistBounded*>(grid[0][0]);
+            delete [] lhs_cells;
+        }
+
     }
 }
