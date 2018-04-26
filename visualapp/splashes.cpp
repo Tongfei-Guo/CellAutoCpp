@@ -18,7 +18,7 @@
 int main()
 {
 
-    std::vector<bitcolor> palette = {};
+    //std::vector<bitcolor> palette = {};
     std::vector<int> colors;
 
     for(int i=0; i<64; i++){

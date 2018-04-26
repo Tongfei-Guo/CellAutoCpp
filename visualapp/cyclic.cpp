@@ -35,11 +35,14 @@ int main()
         bool changing=false;
         for(auto n: neighbors)
             if (n!=NULL)
-                changing=changing||((*n)["state"]==next);
+                changing=changing||((*n)["oldState"]==next);
         if (changing)
             (*self)["state"]=next;
     });
-    auto reset = reset_type();
+    auto reset = reset_type([](Cell *self)
+    {
+        (*self)["oldState"]=(*self)["state"];
+    });
     auto init = init_type([](Cell *self)
     {
         (*self)["state"] = rand()%16;
@@ -68,8 +71,8 @@ int main()
     std::cout << nanoseconds << "nanoseconds\n";
     auto timestamp = world.get_timestamps();
     world.print_test(timestamp, 0);
-    world.AddMeasureAndRun(new CADistributionMeasure("Final Dist"));
 
+    world.AddMeasureAndRun(new CADistributionMeasure("Final Dist"));
     for(auto m: world.GetMeasures())
         std::cout<<"========="<<m->GetName()<<"========="<<std::endl<<m->Str_All()<<std::endl;
 
