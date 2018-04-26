@@ -11,7 +11,10 @@ CyclicObj = $(BasicObj) cyclic.o
 CaveCpp = $(BasicCpp) cave.cpp
 CaveObj = $(BasicObj) cave.o
 
-TARGET = cyclic cave
+ForestfireCpp = $(BasicCpp) forestfire.cpp
+ForestfireObj = $(BasicObj) forestfire.o
+
+TARGET = cyclic cave forestfire
 
 .PHONY: depend clean cleanobj
 
@@ -23,6 +26,9 @@ cave: $(CaveObj)
 
 cyclic: $(CyclicObj)
 	$(CC) $(CFLAGS) -o cyclic $(CyclicObj)
+
+forestfire: $(ForestfireObj)
+	$(CC) $(CFLAGS) -o forestfire $(ForestfireObj)
 
 %.o: %.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
