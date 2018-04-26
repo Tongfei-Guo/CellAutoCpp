@@ -11,16 +11,14 @@ int main()
 {
     auto process = process_type([] (const grid_type &grid, Cell *self)
     {
-        auto coord = get_coord(grid, self);
-        unsigned x = coord.first, y = coord.second;
-        std::vector<Cell*> neighbors = get_neighbors(grid, x, y);
-        int next=((*grid[x][y])["state"]+rand()%2)%16;
+        std::vector<Cell*> neighbors = get_neighbors(grid, self->x, self->y);
+        int next=((*grid[self->x][self->y])["state"]+rand()%2)%16;
         bool changing=false;
         for(auto n: neighbors)
             if (n!=NULL)
                 changing=changing||((*n)["state"]==next);
         if (changing)
-            (*grid[x][y])["state"]=next;
+            (*grid[self->x][self->y])["state"]=next;
     });
     auto reset = reset_type();
     auto init = init_type([](Cell *self)

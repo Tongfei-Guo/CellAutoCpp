@@ -18,9 +18,7 @@ void runIsing()
 
 	auto process = process_type([](const grid_type &grid, Cell *self)
 	{
-		auto coord = get_coord(grid, self);
-		unsigned x = coord.first, y = coord.second;
-		std::vector<Cell*> neighbors = get_neighbors(grid, x, y);
+		std::vector<Cell*> neighbors = get_neighbors(grid, self->x, self->y);
 		int surrounding = countSurroundingCellsWithValue(neighbors, "wasOpen");
 
 

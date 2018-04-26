@@ -37,11 +37,14 @@ public:
 
 	static int countSurroundingCellsWithValue(const std::vector<Cell *> &neighbors, const state_name &state);
 
+    int x,y;
+
 protected:
     static std::unordered_map<type_name, std::tuple<process_type, reset_type, init_type>> type_aux_funcs;
 	std::unordered_map<state_name, state_value> states; // TODO : state can be arbitrary type?
     type_name type;
     // auxiliary functions
+	static inline const type_name &_add_type(const std::pair<type_name, Model::grid_param_type_no_name> &pair);
 	inline void _set_type(const type_name &rhs_type);
 	inline const process_type&_call_process() const;
 	inline const reset_type&_call_reset() const;
@@ -135,10 +138,17 @@ inline const type_name &Cell::get_type() const
 	return type;
 }
 
+inline const type_name &Cell::_add_type(const std::pair<type_name, Model::grid_param_type_no_name> &pair)
+{
+	type_aux_funcs[pair.first] = std::make_tuple(std::get<1>(pair.second), std::get<2>(pair.second), std::get<3>(pair.second));
+	return pair.first;
+}
+
 inline void Cell::_set_type(const type_name &rhs_type)
 {
     type = rhs_type;
 }
+
 
 inline const process_type&Cell::_call_process() const
 {
@@ -186,19 +196,25 @@ inline Cell *Cell::_clone() &&
 
 inline void Cell::_move(Cell *cell)
 {
+    x=cell->x;
+    y=cell->y;
 	type = std::move(cell->type);
 	states = std::move(cell->states);
-	delete cell;
+    delete cell;
 }
 
 inline void Cell::_move(CellHistBounded *cell)
 {
+    x=cell->x;
+    y=cell->y;
 	type = std::move(cell->type);
 	states = std::move(cell->states);
 	delete cell;
 }
 inline void Cell::_move(CellHistUnbounded *cell)
 {
+    x=cell->x;
+    y=cell->y;
 	type = std::move(cell->type);
 	states = std::move(cell->states);
 	delete cell;
@@ -245,6 +261,8 @@ inline Cell CellHistBounded::get_frame(unsigned i) const
         Cell cell;
         cell.type = type_hist[type_hist.size()-i];
         cell.states = states_hist[type_hist.size()-i];
+        cell.x=x;
+        cell.y=y;
         return cell;
     }
     else
@@ -263,6 +281,8 @@ inline CellHistBounded *CellHistBounded::_clone() &&
 
 inline void CellHistBounded::_move(Cell *cell)
 {
+    x=cell->x;
+    y=cell->y;
 	type = std::move(cell->type);
 	states = std::move(cell->states);
 	auto size = type_hist.size();
@@ -273,6 +293,8 @@ inline void CellHistBounded::_move(Cell *cell)
 
 inline void CellHistBounded::_move(CellHistBounded *cell)
 {
+    x=cell->x;
+    y=cell->y;
     auto diff_size = type_hist.size() - cell->type_hist.size();
 	(*this) = std::move(*cell);
 	while (diff_size != 0)
@@ -295,6 +317,8 @@ inline void CellHistBounded::_move(CellHistBounded *cell)
 
 inline void CellHistBounded::_move(CellHistUnbounded *cell)
 {
+    x=cell->x;
+    y=cell->y;
     type = std::move(cell->type);
 	states = std::move(cell->states);
 	auto size1 = type_hist.size(), size2 = cell->type_hist.size();
@@ -346,6 +370,8 @@ inline Cell CellHistUnbounded::get_frame(unsigned i) const
         Cell cell;
         cell.type = type_hist[type_hist.size()-i];
         cell.states = states_hist[type_hist.size()-i];
+        cell.x=x;
+        cell.y=y;
         return cell;
     }
     else
@@ -364,6 +390,8 @@ inline CellHistUnbounded *CellHistUnbounded::_clone() &&
 
 inline void CellHistUnbounded::_move(Cell *cell)
 {
+    x=cell->x;
+    y=cell->y;
     std::fill(type_hist.begin(), type_hist.end(), type_name(""));
     std::fill(states_hist.begin(), states_hist.end(), std::unordered_map<state_name, state_value>());
 	type = std::move(cell->type);
@@ -373,6 +401,8 @@ inline void CellHistUnbounded::_move(Cell *cell)
 
 inline void CellHistUnbounded::_move(CellHistBounded *cell)
 {
+    x=cell->x;
+    y=cell->y;
     type = std::move(cell->type);
 	states = std::move(cell->states);
 	auto size1 = type_hist.size(), size2 = cell->type_hist.size();
@@ -388,6 +418,8 @@ inline void CellHistUnbounded::_move(CellHistBounded *cell)
 
 inline void CellHistUnbounded::_move(CellHistUnbounded *cell)
 {
+    x=cell->x;
+    y=cell->y;
 	type = std::move(cell->type);
 	states = std::move(cell->states);
 	auto size1 = type_hist.size(), size2 = cell->type_hist.size();

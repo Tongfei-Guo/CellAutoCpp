@@ -16,9 +16,7 @@ int main()
         if ((*self)["wasBurning"])
             (*self)["burning"]-=3;
         else if ((*self)["alive"]){
-            auto coord = get_coord(grid, self);
-            unsigned x = coord.first, y = coord.second;
-            std::vector<Cell*> neighbors = get_neighbors(grid, x, y);
+            std::vector<Cell*> neighbors = get_neighbors(grid, self->x, self->y);
             int cnt=countSurroundingCellsWithValue(neighbors, "wasBurning");
             if (cnt || rand()<CHANCE_TO_IGNITE){
                 (*self)["burning"]=9;
