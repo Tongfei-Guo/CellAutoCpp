@@ -5,7 +5,7 @@ INCLUDES = -I depend/glm-0.9.9-a2 -I depend/glad -I ./render
 CMPORDER = -march=native -g
 
 
-_CA = CAWorld.cpp Cell.cpp Model.cpp run.cpp
+_CA = CAWorld.cpp Cell.cpp Model.cpp watercave.cpp
 CAOBJ = $(_CA:.cpp=.o)
 
 

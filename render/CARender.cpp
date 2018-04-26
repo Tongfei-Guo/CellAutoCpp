@@ -63,7 +63,7 @@ CARender::CARender(int gridweigh, int gridlength,std::vector<bitcolor>  worldpal
 	glfwMakeContextCurrent(_window);
 
 
-
+   
 
     glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED );//GLFW_CURSOR_DISABLED);
     // Set this to true so GLEW knows to use a modern approach to retrieving function pointers and extensions
@@ -96,6 +96,9 @@ CARender::CARender(int gridweigh, int gridlength,std::vector<bitcolor>  worldpal
        
 	gridsizeID = glGetUniformLocation(_shader.Program, "gridsize");
 
+glEnable(GL_BLEND);
+glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 }
 
 CARender::~CARender()
@@ -115,7 +118,7 @@ bool CARender::Renderworld(std::vector<int> & bitindex)
 	{
 		processInput(_window);
 
-		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		glClearColor(255.0f, 255.0f, 255.0f, 255.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glBindVertexArray(square_vao);
