@@ -19,6 +19,12 @@ Node.js vs C++ benchmark:
 https://www.linkedin.com/pulse/algorithmic-performance-comparison-c-javascript-java-malyshev/
 https://blog.famzah.net/2016/09/10/cpp-vs-python-vs-php-vs-java-vs-others-performance-benchmark-2016-q3/
 
+Commit 58cb495: 100 iterations, run 10 times, average time 13.6s
+Commit f6ff46d: 100 iterations, run 10 times, average time 23.8s
+Commit 3be72e7: 100 iterations, run 10 times, average time 14.3s// after removing state_name string to int conversion, the speed is almost the same as below, the little overhead possibly comes from virtual dispatch ( 1 more level of indirection with cell itself, and virtual function calls, for example, call prepare_process())
+Commit 7cc931e: 100 iterations, run 10 times, average time 14.4s
+Commit ccf38fe: 100 iterations, run 10 times, average time 14.7s.
+Commit 3a27b4a: 100 iterations, run 10 times, average time 6.74s
 Commit 48b1967: 100 iterations, run 10 times, average time 6.81s.
 Commit 6311a08: 100 iterations, run 10 times, average time 7.10s.
 Commit 327aac0: 100 iterations, run 10 times, average time 6.84s.
