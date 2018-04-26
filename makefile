@@ -44,5 +44,3 @@ clean:
 cleanobj:
 	$(RM)  $(RENOBJ) $(CAOBJ)
 
-
-

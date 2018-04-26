@@ -8,12 +8,25 @@
 #include "CATypes.h"
 #include "Cell.h"
 #include "CAFunctions.h"
+#include "CAMeasure.h"
 class Model; //forward dependency
 
 class CAWorld
 {
 friend std::vector<Cell*> get_neighbors(grid_type &grid, int x, int y);
 public:
+    enum neighborindex
+	{
+    	TOPLEFT = 0,
+    	TOP = 1,
+		TOPRIGHT = 2,
+		LEFT = 3,
+		RIGHT = 4,
+		BOTTOMLEFT = 5,
+		BOTTOM = 6,
+		BOTTOMRIGHT = 7
+	};
+
     CAWorld(const Model &model);
     CAWorld(const std::string &model_name);//no implemented, load built-in model
     CAWorld(const CAWorld &rhs, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high);
@@ -31,12 +44,21 @@ public:
     void save2file(const char * filename); //save the type and states of Cells in grid into file
     void loadfromfile(const char * filename); //load the type and states into Cells in grid from file
 
+    std::vector<std::vector<std::string>> getgridref(gettypeind_type gettypeind); //get the an array indicates type for further init
+    void initgridfromgridref(std::vector<std::vector<std::string>> & gridref); //initialize gird from the girdref generated from the getgridref
+
+
     CAWorld &combine(const CAWorld &world, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high);
     CAWorld &combine(CAWorld &&world, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high);
 
 	std::vector<frame_type> get_timestamps();
     frame_type get_timestamp();
     static std::vector<std::function<int()>> diffX, diffY;
+
+    std::vector<CAMeasure*>& GetMeasures(){ return measures; }
+    void AddMeasure(CAMeasure* n){ measures.push_back(n); }
+    void AddMeasureAndRun(CAMeasure* n);
+
 private:
     unsigned width, height, grid_size;
 	grid_type grid;
@@ -50,5 +72,7 @@ private:
 	void copy_grid(const CAWorld &rhs);
 	void delete_grid();
     getcolor_type getcolor;
+
+    std::vector<CAMeasure*> measures;
 };
 #endif
