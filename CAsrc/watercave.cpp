@@ -65,11 +65,20 @@ int main()
     });
 
     CAWorld vaccumcave(Model(world_param_type(gridsize, gridsize, 6), { grid_param_type("Wall", 100, vaccumcave_process, vaccumcave_reset, vaccumcave_init) },0,vaccum_getcolor));
-    vaccumcave.forall_step(10);
+    //vaccumcave.forall_step(10);
 
 
-    auto bitmap = vaccumcave.print_world();
-    if(!render.Renderworld(bitmap)) std::cout<<"done"<<std::endl;//break;
+    auto  bitmap = vaccumcave.print_world();
+    for(int i = 0; i < 10; i ++)
+    {
+        vaccumcave.forall_step(1);
+        bitmap = vaccumcave.print_world();
+        if(!render.Renderworld(bitmap)) break;
+    }
+    
+    std::cin.get();
+    //bitmap = vaccumcave.print_world();
+    //if(!render.Renderworld(bitmap)) std::cout<<"done"<<std::endl;//break;
 
 
     auto gridref = gettypeind_type([](Cell *self)
@@ -184,14 +193,11 @@ int main()
     {
         fullcave.forall_step(1);
         bitmap = fullcave.print_world();
-        for (auto m: fullcave.GetMeasures())
-	    std::cout<<m->Str_Current()<<std::endl;
+        //for (auto m: fullcave.GetMeasures())
+	//    std::cout<<m->Str_Current()<<std::endl;
         if(!render.Renderworld(bitmap)) break;
     }
 
-	
-    
-    std::this_thread::sleep_for(2000ms);
     std::cout<<"end of program"<<std::endl;
 	return 0;
 }

@@ -59,7 +59,7 @@ int main()
     {
         world.forall_step(1);
         auto bitmap = world.print_world();
-        if(!render.Renderworld(bitmap)) std::cout<<"done"<<std::endl;//break;
+        if(!render.Renderworld(bitmap)) break;
     }
 
 	

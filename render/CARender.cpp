@@ -23,6 +23,7 @@ std::vector<GLfloat> CARender::interpretbitmap(std::vector<int> bitindex)
     {
         int colorind = bitindex[i];
         bitcolor colorinrgb = palette[colorind];
+        
         bitmap[i*4] = (GLfloat)(colorinrgb.R/255.0);
         bitmap[i*4 + 1] = (GLfloat)(colorinrgb.G/255.0);
         bitmap[i*4 + 2] = (GLfloat)(colorinrgb.B/255.0);
@@ -65,7 +66,7 @@ CARender::CARender(int gridweigh, int gridlength,std::vector<bitcolor>  worldpal
 
    
 
-    glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED );//GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN );//GLFW_CURSOR_DISABLED);
     // Set this to true so GLEW knows to use a modern approach to retrieving function pointers and extensions
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))

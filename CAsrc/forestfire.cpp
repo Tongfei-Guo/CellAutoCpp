@@ -6,9 +6,26 @@
 #include "CATypes.h"
 #include "CAFunctions.h"
 #include <chrono>
+
+//render:
+#include <thread>
+#include <CArender.hpp>
+
 #include <iostream>
+
 int main()
 {
+    std::vector<bitcolor> palette = {
+    {208,70,72, 0}, {208,70,72, 28}, {208,70,72, 56}, {208,70,72, 84},
+    {208,70,72, 112}, {208,70,72, 140}, {208,70,72, 168}, {208,70,72, 196},
+    {208,70,72, 224}, {208, 70, 72, 255}, {52, 101, 36, 255}, {255, 255, 255, 255}
+    };
+
+    
+    CARender render(96,64,palette);
+    using namespace std::chrono_literals;
+
+
     int CHANCE_TO_IGNITE = 0.0001*RAND_MAX;
     int CHANCE_TO_GROW = 0.01*RAND_MAX;
     auto process = process_type([CHANCE_TO_IGNITE, CHANCE_TO_GROW] (const grid_type &grid, Cell *self)
@@ -40,22 +57,24 @@ int main()
             return (*self)["alive"]?10:11;
     });
 
-/*
-
-    std::vector<bitcolor> palette = {
-    {208,70,72, 0}, {208,70,72, 28}, {208,70,72, 56}, {208,70,72, 84},
-    {208,70,72, 112}, {208,70,72, 140}, {208,70,72, 168}, {208,70,72, 196},
-    {208,70,72, 224}, {208, 70, 72, 255}, {52, 101, 36, 255}, {255, 255, 255, 255}
-    };
-
-*/
-
     //CAWorld world1(Model(world_param_type(100, 50, 6), { grid_param_type("Wall", 100, process, reset, init) },0));
     //CAWorld world2(Model(world_param_type(100, 50, 6), { grid_param_type("Wall", 100, process, reset, init) },1));
-    CAWorld world(Model(world_param_type(96, 64, 6), { grid_param_type("tree", 100, process, reset, init) },1));
+    CAWorld world(Model(world_param_type(96, 64, 6), { grid_param_type("tree", 100, process, reset, init) },1,getcolor));
     //world.AddMeasure(new CADistributionMeasure());
-	auto start = std::chrono::high_resolution_clock::now();
-	world.forall_step(1000);
+    auto start = std::chrono::high_resolution_clock::now();
+	
+    for(int i = 0; i < 10000; i++)
+    {
+        world.forall_step(10);
+        if(i % 2 == 0)
+        {
+            auto bitmap = world.print_world();
+            if(!render.Renderworld(bitmap)) break;
+        }
+    }
+
+
+
     auto elapsed = std::chrono::high_resolution_clock::now() - start;
     auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed).count();
     std::cout << nanoseconds << "nanoseconds\n";
