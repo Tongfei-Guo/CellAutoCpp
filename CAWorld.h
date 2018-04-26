@@ -8,6 +8,7 @@
 #include "CATypes.h"
 #include "Cell.h"
 #include "CAFunctions.h"
+#include "CAMeasure.h"
 class Model; //forward dependency
 
 class CAWorld
@@ -35,6 +36,11 @@ public:
 	std::vector<frame_type> get_timestamps();
     frame_type get_timestamp();
     static std::vector<std::function<int()>> diffX, diffY;
+
+    std::vector<CAMeasure*>& GetMeasures(){ return measures; }
+    void AddMeasure(CAMeasure* n){ measures.push_back(n); }
+    void AddMeasureAndRun(CAMeasure* n);
+
 private:
     unsigned width, height, grid_size;
 	grid_type grid;
@@ -48,5 +54,7 @@ private:
 	void copy_grid(const CAWorld &rhs);
 	void delete_grid();
     getcolor_type getcolor;
+
+    std::vector<CAMeasure*> measures;
 };
 #endif

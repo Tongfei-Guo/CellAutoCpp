@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <cctype>
 #include <thread>
+#include <mutex>
 
 std::vector<std::function<int()>>
 CAWorld::diffX = std::vector<std::function<int()>>
@@ -147,6 +148,7 @@ CAWorld &CAWorld::operator=(const CAWorld &rhs)
     width = rhs.width;
     grid_size = rhs.grid_size;
     copy_grid(rhs);
+    return *this;
 }
 
 CAWorld &CAWorld::operator=(CAWorld &&rhs) noexcept
@@ -156,6 +158,7 @@ CAWorld &CAWorld::operator=(CAWorld &&rhs) noexcept
     std::swap(width, rhs.width);
     std::swap(grid_size, rhs.grid_size);
     std::swap(grid, rhs.grid);
+    return *this;
 }
 
 CAWorld::~CAWorld()
@@ -426,11 +429,14 @@ type_name CAWorld::type_initializer(const std::vector<std::pair<type_name, perce
 		if (rand <= accum_dist[i].second)
 			return accum_dist[i].first;
 	}
-
+    throw percentage_error("type_initializer failure");
 }
 
 void CAWorld::_forall_step()
 {
+    for(auto m: measures)
+        m->NewRecord();
+
     unsigned num_cpus = std::thread::hardware_concurrency();
     std::vector<std::thread> threads(num_cpus);
     if (buffersize != 1 || empty_reset != 1) // optimization : if no buffer and all reset functions for all types are empty, then skip the loop.
@@ -461,7 +467,7 @@ void CAWorld::_forall_step()
     //process
     for (unsigned i = 0; i != num_cpus; ++i)
     {
-        threads[i] = std::thread([i, num_cpus](grid_type &grid)
+        threads[i] = std::thread([i, num_cpus, this](grid_type &grid)
         {
             unsigned height = grid.size();
             unsigned width = grid[0].size();
@@ -479,6 +485,22 @@ void CAWorld::_forall_step()
     {
         t.join();
     }
+    for(unsigned j = 0; j != height; ++j)
+        for(unsigned k = 0; k != width; ++k)
+        {
+            for(auto m: this->measures)
+                m->Update(grid[j][k]);
+        }
+}
+
+void CAWorld::AddMeasureAndRun(CAMeasure* n){
+    measures.push_back(n);
+    n->NewRecord();
+    for(unsigned j = 0; j != height; ++j)
+        for(unsigned k = 0; k != width; ++k)
+        {
+            n->Update(grid[j][k]);
+        }
 }
 
 void CAWorld::_step(unsigned i, unsigned j)
