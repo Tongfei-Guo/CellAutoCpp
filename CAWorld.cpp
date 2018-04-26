@@ -10,27 +10,6 @@
 #include <algorithm>
 #include <cctype>
 #include <thread>
-#include <mutex>
-
-std::vector<std::function<int()>>
-CAWorld::diffX = std::vector<std::function<int()>>
-({[](){return -1;},
- [](){return 0; },
- [](){return 1; },
- [](){return -1; },
- [](){return 1; },
- [](){return -1; },
- [](){return 0; },
- [](){return 1; }}),
-CAWorld::diffY = std::vector<std::function<int()>>
-({[](){return -1; },
- [](){return -1; },
- [](){return -1; },
- [](){return 0; },
- [](){return 0; },
- [](){return 1; },
- [](){return 1; },
- [](){return 1; }});
 
 CAWorld::CAWorld(const Model &model) :
 height(std::get<0>(model.world_param)),
