@@ -33,11 +33,14 @@ int getSurroundingCellsAverageValue(const std::vector<Cell *> &neighbors, const 
 
 std::vector<Cell*> get_neighbors(const grid_type &grid, int x, int y)
 {
-    std::vector<Cell*> neighbors(CAWorld::diffX.size());
-	for (auto i = 0; i != CAWorld::diffX.size(); ++i)
+
+    static std::vector<int> diffX = {-1, 0, 1, -1, 1, 0, -1, 1};
+    static std::vector<int> diffY = {-1, -1, -1, 0, 0, 1, 1, 1};
+    std::vector<Cell*> neighbors(diffX.size());
+	for (auto i = 0; i != diffX.size(); ++i)
 	{
-		int neighborX = x + CAWorld::diffX[i]();
-		int neighborY = y + CAWorld::diffY[i]();
+		int neighborX = x + diffX[i];
+		int neighborY = y + diffY[i];
 		if (neighborX < 0 || neighborY < 0 || neighborX >= grid.size() || neighborY >= grid[0].size())
 			neighbors[i] = nullptr;
 		else
