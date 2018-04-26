@@ -32,9 +32,19 @@ int main()
     	return (*self)["state"];
     });
 
+/*
+    std::vector<bitcolor> palette = {
+
+    {255,0,0,255}, {255,96,0,255}, {255,191,0,255}, {223,255,0,255},
+    {128,255,0,255}, {32,255,0,255}, {0,255,64,255}, {0,255,159,255},
+    {0,255,255,255}, {0,159,255,255}, {0,64,255,255}, {32,0,255,255},
+    {127,0,255,255}, {223,0,255,255}, {255,0,191,255}, {255,0,96,255}
+    };
+    */
+
     //CAWorld world1(Model(world_param_type(100, 50, 6), { grid_param_type("Wall", 100, process, reset, init) },0));
     //CAWorld world2(Model(world_param_type(100, 50, 6), { grid_param_type("Wall", 100, process, reset, init) },1));
-    CAWorld world(Model(world_param_type(50, 50, 6), { grid_param_type("Cyclic", 100, process, reset, init) },1));
+    CAWorld world(Model(world_param_type(96, 64, 6), { grid_param_type("Cyclic", 100, process, reset, init) },1));
     //world.AddMeasure(new CADistributionMeasure());
 	auto start = std::chrono::high_resolution_clock::now();
 	world.forall_step(1000);
