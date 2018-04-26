@@ -123,7 +123,7 @@ int main()
 				thislevel != 0 &&
 				neighbors[i]->get_type()=="water" && (*neighbors[i])["level"] < 9)
         	{
-                int amt = std::min(thislevel, (int)std::ceil( (9 - (*neighbors[i])["level"])/2 ) );
+                int amt = std::min(thislevel, (int)std::ceil( (9.0 - (*neighbors[i])["level"])/2.0 ) );
                 (*self)["level"] -= amt;
                 (*neighbors[i])["level"] += amt;
                 return;
@@ -131,12 +131,12 @@ int main()
         }
 
         // sides take a third of what I have
-        for(int i = 5; i < 8; i++)
+        for(int i = 3; i < 5; i++)
         {
         	if (neighbors[i] != nullptr &&
         		neighbors[i]->get_type()=="water" && (*neighbors[i])["level"]  < thislevel)
         	{
-        		int amt = std::min(thislevel, (int)std::ceil( (9 - (*neighbors[i])["level"])/3 ) );
+        		int amt = std::min(thislevel, (int)std::ceil( (9.0 - (*neighbors[i])["level"])/3.0 ) );
         		(*self)["level"] -= amt;
         		(*neighbors[i])["level"] += amt;
         		return ;

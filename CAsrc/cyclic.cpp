@@ -7,8 +7,20 @@
 #include "CAFunctions.h"
 #include <chrono>
 #include <iostream>
+
+//render:
+#include <thread>
+#include <CArender.hpp>
+
+#include <iostream>
+
+
 int main()
 {
+    
+    CARender render(gridsize,gridsize,palette);
+    using namespace std::chrono_literals;
+
     auto process = process_type([] (const grid_type &grid, Cell *self)
     {
         auto coord = get_coord(grid, self);
@@ -37,7 +49,15 @@ int main()
     CAWorld world(Model(world_param_type(50, 50, 6), { grid_param_type("Cyclic", 100, process, reset, init) },1));
     //world.AddMeasure(new CADistributionMeasure());
 	auto start = std::chrono::high_resolution_clock::now();
-	world.forall_step(1000);
+
+    for(int i = 0; i < 100; i++)
+    {
+        world.forall_step(1);
+        auto bitmap = world.print_world();
+        if(!render.Renderworld(bitmap)) std::cout<<"done"<<std::endl;//break;
+    }
+
+	
     auto elapsed = std::chrono::high_resolution_clock::now() - start;
     auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed).count();
     std::cout << nanoseconds << "nanoseconds\n";
