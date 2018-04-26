@@ -15,18 +15,6 @@ class CAWorld
 {
 friend std::vector<Cell*> get_neighbors(grid_type &grid, int x, int y);
 public:
-    enum neighborindex
-	{
-    	TOPLEFT = 0,
-    	TOP = 1,
-		TOPRIGHT = 2,
-		LEFT = 3,
-		RIGHT = 4,
-		BOTTOMLEFT = 5,
-		BOTTOM = 6,
-		BOTTOMRIGHT = 7
-	};
-
     CAWorld(const Model &model);
     CAWorld(const std::string &model_name);//no implemented, load built-in model
     CAWorld(const CAWorld &rhs, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high);
@@ -53,7 +41,6 @@ public:
 
 	std::vector<frame_type> get_timestamps();
     frame_type get_timestamp();
-    static std::vector<std::function<int()>> diffX, diffY;
 
     std::vector<CAMeasure*>& GetMeasures(){ return measures; }
     void AddMeasure(CAMeasure* n){ measures.push_back(n); }

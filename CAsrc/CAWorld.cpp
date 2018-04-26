@@ -10,27 +10,6 @@
 #include <algorithm>
 #include <cctype>
 #include <thread>
-#include <mutex>
-
-std::vector<std::function<int()>>
-CAWorld::diffX = std::vector<std::function<int()>>
-({[](){return -1;},
- [](){return 0; },
- [](){return 1; },
- [](){return -1; },
- [](){return 1; },
- [](){return -1; },
- [](){return 0; },
- [](){return 1; }}),
-CAWorld::diffY = std::vector<std::function<int()>>
-({[](){return -1; },
- [](){return -1; },
- [](){return -1; },
- [](){return 0; },
- [](){return 0; },
- [](){return 1; },
- [](){return 1; },
- [](){return 1; }});
 
 CAWorld::CAWorld(const Model &model) :
 height(std::get<0>(model.world_param)),
@@ -491,12 +470,15 @@ void CAWorld::_forall_step()
     {
         t.join();
     }
-    for(unsigned j = 0; j != height; ++j)
-        for(unsigned k = 0; k != width; ++k)
-        {
-            for(auto m: this->measures)
-                m->Update(grid[j][k]);
-        }
+    if (measures.size() != 0)
+    {
+        for(unsigned j = 0; j != height; ++j)
+            for(unsigned k = 0; k != width; ++k)
+            {
+                for(auto m: this->measures)
+                    m->Update(grid[j][k]);
+            }
+    }
 }
 
 void CAWorld::AddMeasureAndRun(CAMeasure* n){
