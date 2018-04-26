@@ -12,7 +12,7 @@
 #include <CArender.hpp>
 
 #include <iostream>
-int main()
+int testmain()
 {
 	auto process1 = process_type([](const grid_type &grid, Cell *self)
 	{

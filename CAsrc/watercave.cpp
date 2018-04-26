@@ -9,13 +9,34 @@
 #include <iostream>
 #include <cmath>
 
+//render:
+#include <thread>
+#include <CArender.hpp>
+
+#include <iostream>
 
 //generate a cave filled with water
 //step 1: generate a vaccum cave
 //step 2: fil the cave with water
-int cavewatermain()
+int main()
 {
+    std::vector<bitcolor> palette = {
+    		{89, 125, 206, 0},         //0
+    		{89, 125, 206, 255/9},     //1
+                {89, 125, 206, 2*255/9},   //2
+                {89, 125, 206, 3*255/9},   //3
+                {89, 125, 206, 4*255/9},   //4
+                {89, 125, 206, 5*255/9},   //5
+                {89, 125, 206, 6*255/9},   //6
+                {89, 125, 206, 7*255/9},   //7
+                {89, 125, 206, 8*255/9},   //8  
+                {255,255,255,255},         //9
+                {0,0,0,255}                //10
+    };
 
+    int gridsize = 100;
+    CARender render(gridsize,gridsize,palette);
+    using namespace std::chrono_literals;
 
     //step 1. generate a vaccum cave
     auto vaccumcave_process = process_type([] (const grid_type &grid, Cell *self)
@@ -35,8 +56,21 @@ int cavewatermain()
         (*self)["open"] = (((double) rand() / (RAND_MAX)) > 0.4);
     });
 
-    CAWorld vaccumcave(Model(world_param_type(50, 50, 6), { grid_param_type("Wall", 100, vaccumcave_process, vaccumcave_reset, vaccumcave_init) },0));
+    auto vaccum_getcolor = getcolor_type([](Cell *self)
+    {
+        if((*self)["open"] == 1)
+	    return 9;
+	else
+	    return 10;
+    });
+
+    CAWorld vaccumcave(Model(world_param_type(gridsize, gridsize, 6), { grid_param_type("Wall", 100, vaccumcave_process, vaccumcave_reset, vaccumcave_init) },0,vaccum_getcolor));
     vaccumcave.forall_step(10);
+
+
+    auto bitmap = vaccumcave.print_world();
+    if(!render.Renderworld(bitmap)) std::cout<<"done"<<std::endl;//break;
+
 
     auto gridref = gettypeind_type([](Cell *self)
     {
@@ -111,20 +145,46 @@ int cavewatermain()
 
     });
 
+
     auto water_init = init_type([](Cell *self)
     {
-        (*self)["level"] = (int)std::floor(((double) rand() / (RAND_MAX)) * 9); //the cave cell must be blocked
+        (*self)["level"] = (int)std::floor( ((double) rand() / (RAND_MAX)) * 9 ); //the cave cell must be blocked
+        //std::cout<<"waterlevel:"<<(*self)["level"]<<std::endl;
+    });
+
+    auto fullcave_getcolor = getcolor_type([](Cell *self)
+    {
+        
+        if(self->get_type()=="Wall")
+        {  
+            return 10;
+        }
+        else
+        {
+          //std::cout<<"water level"<<(*self)["levl"]<<std::endl;
+          return (*self)["level"];
+        } 
     });
 
 
-    Model watercavemodel(world_param_type(50, 50, 6),
+
+    Model watercavemodel(world_param_type(gridsize, gridsize, 6),
     		             { grid_param_type("Wall", 20, fullcave_processs, {}, fullcave_init) ,
-    		               grid_param_type("water",80, water_processs, {}, water_init)});
+    		               grid_param_type("water",80, water_processs, {}, water_init)},1,fullcave_getcolor);
     CAWorld fullcave(watercavemodel);
     fullcave.initgridfromgridref(cavemap);
 
-    fullcave.forall_step(1);
+    //fullcave.forall_step(1);
 
+    bitmap = fullcave.print_world();
+    for(int i = 0; i < 10000; i ++)
+    {
+        fullcave.forall_step(1);
+        bitmap = fullcave.print_world();
+        if(!render.Renderworld(bitmap)) break;
+    }
+    
+    std::this_thread::sleep_for(2000ms);
     std::cout<<"end of program"<<std::endl;
 	return 0;
 }
