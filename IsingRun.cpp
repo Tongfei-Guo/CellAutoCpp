@@ -24,6 +24,9 @@ void runIsing()
 
 		float beta = 0.5;
 		float J = 2;
+        float mu = 0.005;
+        float H = 1;
+
 		state_value currentori = (*self)["ori"];
 		state_value flipedori = (*self)["ori"] * -1;
 
@@ -34,9 +37,9 @@ void runIsing()
 		{
 			if(adjescent == nullptr) continue;
             //compute new energy
-            Hnew += -J*(*adjescent)["ori"]*flipedori;
+            Hnew += -J*(*adjescent)["ori"]*flipedori  - mu*H*flipedori;;
 			//compute odd energy
-            Hold += -J*(*adjescent)["ori"]*currentori;
+            Hold += -J*(*adjescent)["ori"]*currentori  - mu*H*currentori;
 		}
 
 		float accpetance = std::exp(-beta * (Hnew - Hold));
