@@ -35,8 +35,6 @@ public:
 	inline const type_name &get_type() const;
 	inline const std::unordered_map<state_name, state_value> & get_states() const;
 
-	static int countSurroundingCellsWithValue(const std::vector<Cell *> &neighbors, const state_name &state);
-
     int x,y;
 
 protected:

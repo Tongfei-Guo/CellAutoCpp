@@ -22,7 +22,7 @@ int cavewatermain()
     {
         std::vector<Cell*> neighbors = get_neighbors(grid, self->x, self->y);
         int surrounding = countSurroundingCellsWithValue(neighbors, "wasOpen");
-        (*grid[self->x][self->y])["open"] = ((*grid[x][y])["wasOpen"] && surrounding >=4 || surrounding >= 6);
+        (*grid[self->x][self->y])["open"] = ((*grid[self->x][self->y])["wasOpen"] && surrounding >=4 || surrounding >= 6);
     });
     auto vaccumcave_reset = reset_type([](Cell *self)
     {
@@ -59,9 +59,10 @@ int cavewatermain()
     //water cell has 9 water level. Higher level indicates more water in the cell.
     auto water_processs = process_type([](const grid_type &grid, Cell *self)
     {
-    	auto coord = get_coord(grid, self);
-        unsigned x = coord.first, y = coord.second;
-        std::vector<Cell*> neighbors = get_neighbors(grid, x, y);
+    	//auto coord = get_coord(grid, self);
+        unsigned x = self->x, y = self->y;
+
+    	std::vector<Cell*> neighbors = get_neighbors(grid, x, y);
 
         int thislevel = (*self)["level"];
         if(thislevel == 0)
@@ -69,20 +70,20 @@ int cavewatermain()
 
 
         // cell below me will take all it can
-        if(neighbors[CAWorld::BOTTOM] != nullptr &&
+        if(neighbors[BOTTOM] != nullptr &&
         	thislevel!=0 &&
-		   neighbors[CAWorld::BOTTOM]->get_type()=="water" && (*neighbors[CAWorld::BOTTOM])["level"] < 9 )
+		   neighbors[BOTTOM]->get_type()=="water" && (*neighbors[BOTTOM])["level"] < 9 )
         {
-        	int amt = std::min(thislevel,9 - (*neighbors[CAWorld::BOTTOM])["level"]);
+        	int amt = std::min(thislevel,9 - (*neighbors[BOTTOM])["level"]);
             (*self)["level"] -= amt;
-            (*neighbors[CAWorld::BOTTOM])["level"] += amt;
+            (*neighbors[BOTTOM])["level"] += amt;
         	return ;
         }
 
         // bottom two corners take half of what I have
         for(int i = 5; i < 8; i++)
         {
-        	if( i!=CAWorld::BOTTOM &&
+        	if( i!=BOTTOM &&
         		neighbors[i] != nullptr &&
 				thislevel != 0 &&
 				neighbors[i]->get_type()=="water" && (*neighbors[i])["level"] < 9)
