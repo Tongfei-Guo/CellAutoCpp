@@ -185,7 +185,8 @@ std::vector<int> CAWorld::print_world()
             }
             else
             {
-            	std::cout<<"Warning: the getcolor is not defined"<<std::endl;
+            	//std::cout<<"Warning: the getcolor is not defined"<<std::endl;
+            	throw nogetcolor_error();
             }
 
 		}
@@ -257,7 +258,8 @@ void CAWorld::loadfromfile(char const * filename)
 		std::getline(savefile,alineoflog);
 		if(savefile.rdstate()!= std::ios::goodbit)
 		{
-			std::cout<<"something wrong when load the file, please check if the grid is fit into the log"<<std::endl;
+			throw logfile_error(filename);
+			//std::cout<<"something wrong when load the file, please check if the grid is fit into the log"<<std::endl;
 		}
 
 			std::stringstream logstream(alineoflog); //get the type name

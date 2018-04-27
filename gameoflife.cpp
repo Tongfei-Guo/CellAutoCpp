@@ -7,7 +7,7 @@
 #include "CAFunctions.h"
 #include <chrono>
 #include <iostream>
-int main()
+int gameoflifemain()
 {
     auto process = process_type([] (const grid_type &grid, Cell *self)
     {

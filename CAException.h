@@ -69,4 +69,26 @@ private:
 	std::string message;
 };
 
+class logfile_error:public std::exception
+{
+public:
+	logfile_error(const std::string &&m) : message(std::move(m)){}
+	virtual const char* what() const throw()
+	{
+		return ("something wrong when load the file:" + message + ", please check if the grid is fit into the log").c_str();
+	}
+private:
+	std::string message;
+};
+
+class nogetcolor_error: public std::exception
+{
+public:
+    virtual const char * what() const throw()
+	{
+    	return ("in print world: the getcolor is not defined");
+	}
+};
 #endif
+
+

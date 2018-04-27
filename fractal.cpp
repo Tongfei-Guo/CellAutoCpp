@@ -7,7 +7,7 @@
 #include "CAFunctions.h"
 #include <chrono>
 #include <iostream>
-int main()
+int fratcalmain()
 {
 
     std::vector<int> rullset{0, 1, 0, 0, 1, 0, 0, 1};

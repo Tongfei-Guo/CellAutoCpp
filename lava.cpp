@@ -11,7 +11,7 @@
 
 #define V 100000000 //1e8
 
-int main()
+int lavamain()
 {
 
     std::vector<int> colors(64);

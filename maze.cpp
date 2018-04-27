@@ -7,7 +7,7 @@
 #include "CAFunctions.h"
 #include <chrono>
 #include <iostream>
-int main()
+int mazemain()
 {
     auto process = process_type([] (const grid_type &grid, Cell *self)
     {

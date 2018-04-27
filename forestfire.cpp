@@ -7,7 +7,7 @@
 #include "CAFunctions.h"
 #include <chrono>
 #include <iostream>
-int main()
+int forestfiremain()
 {
     int CHANCE_TO_IGNITE = 0.0001*RAND_MAX;
     int CHANCE_TO_GROW = 0.01*RAND_MAX;

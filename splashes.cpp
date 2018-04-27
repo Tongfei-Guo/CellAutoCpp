@@ -21,7 +21,7 @@ struct bitcolor
 
 #define V 100000000 //1e8
 
-int main()
+int splashesmain()
 {
 
     //std::vector<bitcolor> palette = {};
