@@ -3,4 +3,4 @@
 #include <string>
 #include "CATypes.h"
 
-std::unordered_map<type_name, std::tuple<process_type, reset_type, init_type>> Cell::type_aux_funcs;
+std::map<type_name, std::tuple<process_type, reset_type, init_type>> Cell::type_aux_funcs;
