@@ -194,8 +194,6 @@ inline Cell *Cell::_clone() &&
 
 inline void Cell::_move(Cell *cell)
 {
-    x=cell->x;
-    y=cell->y;
 	type = std::move(cell->type);
 	states = std::move(cell->states);
     delete cell;
@@ -203,16 +201,12 @@ inline void Cell::_move(Cell *cell)
 
 inline void Cell::_move(CellHistBounded *cell)
 {
-    x=cell->x;
-    y=cell->y;
 	type = std::move(cell->type);
 	states = std::move(cell->states);
 	delete cell;
 }
 inline void Cell::_move(CellHistUnbounded *cell)
 {
-    x=cell->x;
-    y=cell->y;
 	type = std::move(cell->type);
 	states = std::move(cell->states);
 	delete cell;
@@ -279,8 +273,6 @@ inline CellHistBounded *CellHistBounded::_clone() &&
 
 inline void CellHistBounded::_move(Cell *cell)
 {
-    x=cell->x;
-    y=cell->y;
 	type = std::move(cell->type);
 	states = std::move(cell->states);
 	auto size = type_hist.size();
@@ -291,8 +283,6 @@ inline void CellHistBounded::_move(Cell *cell)
 
 inline void CellHistBounded::_move(CellHistBounded *cell)
 {
-    x=cell->x;
-    y=cell->y;
     auto diff_size = type_hist.size() - cell->type_hist.size();
 	(*this) = std::move(*cell);
 	while (diff_size != 0)
@@ -315,8 +305,6 @@ inline void CellHistBounded::_move(CellHistBounded *cell)
 
 inline void CellHistBounded::_move(CellHistUnbounded *cell)
 {
-    x=cell->x;
-    y=cell->y;
     type = std::move(cell->type);
 	states = std::move(cell->states);
 	auto size1 = type_hist.size(), size2 = cell->type_hist.size();
@@ -388,8 +376,6 @@ inline CellHistUnbounded *CellHistUnbounded::_clone() &&
 
 inline void CellHistUnbounded::_move(Cell *cell)
 {
-    x=cell->x;
-    y=cell->y;
     std::fill(type_hist.begin(), type_hist.end(), type_name(""));
     std::fill(states_hist.begin(), states_hist.end(), std::map<state_name, state_value>());
 	type = std::move(cell->type);
@@ -399,8 +385,6 @@ inline void CellHistUnbounded::_move(Cell *cell)
 
 inline void CellHistUnbounded::_move(CellHistBounded *cell)
 {
-    x=cell->x;
-    y=cell->y;
     type = std::move(cell->type);
 	states = std::move(cell->states);
 	auto size1 = type_hist.size(), size2 = cell->type_hist.size();
@@ -416,8 +400,6 @@ inline void CellHistUnbounded::_move(CellHistBounded *cell)
 
 inline void CellHistUnbounded::_move(CellHistUnbounded *cell)
 {
-    x=cell->x;
-    y=cell->y;
 	type = std::move(cell->type);
 	states = std::move(cell->states);
 	auto size1 = type_hist.size(), size2 = cell->type_hist.size();

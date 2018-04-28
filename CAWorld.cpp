@@ -312,6 +312,8 @@ CAWorld &CAWorld::combine(const CAWorld &world, unsigned r_low, unsigned r_high,
                 grid[i][j]->_move(dynamic_cast<CellHistUnbounded*>(curr));
             else
 		        grid[i][j]->_move(dynamic_cast<CellHistBounded*>(curr));
+            grid[i][j]->x = i;
+            grid[i][j]->y = j;
 		}
 	}
 	auto frames_after = grid[r_low][c_low]->timestamp_size();
@@ -344,6 +346,8 @@ CAWorld &CAWorld::combine(CAWorld &&world, unsigned r_low, unsigned r_high, unsi
                 grid[i][j]->_move(dynamic_cast<CellHistUnbounded*>(curr));
             else
 		        grid[i][j]->_move(dynamic_cast<CellHistBounded*>(curr));
+            grid[i][j]->x = i;
+            grid[i][j]->y = j;
 		}
 	}
 	auto frames_after = grid[r_low][c_low]->timestamp_size();
