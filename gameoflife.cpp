@@ -7,7 +7,8 @@
 #include "CAFunctions.h"
 #include <chrono>
 #include <iostream>
-int gameoflifemain()
+#include "CAConsoleViz.h"
+int main()
 {
     auto process = process_type([] (const grid_type &grid, Cell *self)
     {
@@ -38,15 +39,26 @@ int gameoflifemain()
     };
     */
 
-    CAWorld world(Model(world_param_type(96, 64, 6), { grid_param_type("living", 100, process, reset, init) },1, getcolor));
-    //world.AddMeasure(new CADistributionMeasure());
-	world.forall_step(1000);
-    auto timestamp = world.get_timestamps();
-    world.print_test(timestamp, 0);
-    world.AddMeasureAndRun(new CADistributionMeasure("Final Dist"));
+    CAWorld world(Model(world_param_type(60, 60, 6), { grid_param_type("living", 100, process, reset, init) },1, getcolor));
+    //world.AddMeasure(new CADistributionMeasure("my metric"));
+	//world.forall_step(10);
+    //world.AddMeasureAndRun(new CADistributionMeasure("Final Dist"));
 
-    for(auto m: world.GetMeasures())
-        std::cout<<"========="<<m->GetName()<<"========="<<std::endl<<m->Str_All()<<std::endl;
+    CAConsoleViz myviz(&world);
+
+    myviz.SetColorScheme(
+        [](Cell *cell)->char{
+            if ((*cell)["alive"]==1)
+                return 'O';
+            else
+                return '.';
+        }
+    );
+
+    myviz.Visualize(1000,10 );
+
+    //for(auto m: world.GetMeasures())
+        //std::cout<<"========="<<m->GetName()<<"========="<<std::endl<<m->Str_All()<<std::endl;
 
 	return 0;
 }

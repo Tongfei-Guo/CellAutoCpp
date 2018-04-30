@@ -14,6 +14,7 @@ typedef std::function<void(Cell *)> reset_type;
 typedef std::function<void(Cell *)> init_type;
 typedef std::function<void(grid_type &, Cell*)> process_type;
 typedef std::function<int(Cell *)> getcolor_type;
+typedef std::function<char(Cell *)> consoleviz_type;
 
 typedef std::function<std::string(Cell *)> gettypeind_type;
 
