@@ -1,6 +1,7 @@
 #ifndef CELL_AUTO_CPP_H
 #define CELL_AUTO_CPP_H
 
+//compile with -std=c++14, link with -lpthread
 #include "CATypes.h"
 #include "CAException.h"
 #include "Cell.h"
