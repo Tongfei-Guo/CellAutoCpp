@@ -36,6 +36,7 @@ Some of the animated plotting:
 ![maze](https://github.com/Tongfei-Guo/CellAutoCpp/blob/master/Images/maze.gif)
 
 10. Ising(negative M field) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 11. Ising(positive M field)  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+
 ![negising](https://github.com/Tongfei-Guo/CellAutoCpp/blob/master/Images/negising.gif)
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
 ![posising](https://github.com/Tongfei-Guo/CellAutoCpp/blob/master/Images/posising.gif)
