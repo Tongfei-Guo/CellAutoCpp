@@ -25,7 +25,6 @@ public:
 	CAWorld &step(unsigned x, unsigned y);
 	CAWorld &forall_step(unsigned steps);
 	std::vector<int> print_world();
-    void print_test(std::vector<frame_type> &frames, unsigned k);//don't delete until production.
     void save2file(const char * filename); //save the type and states of Cells in grid into file
     void loadfromfile(const char * filename); //load the type and states into Cells in grid from file
     std::vector<std::vector<std::string>> getgridref(gettypeind_type gettypeind); //get the an array indicates type for further init

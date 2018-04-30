@@ -194,27 +194,6 @@ std::vector<int> CAWorld::print_world()
 	return std::move(bitindex);
 }
 
-void CAWorld::print_test(std::vector<frame_type> &frames, unsigned k)
-{
-	std::ofstream of("output.txt");
-	for (int i = 0; i != height; ++i)
-	{
-		for (int j = 0; j != width; ++j)
-		{
-		    if (frames[k][i][j].type == "")
-		        of << "2,";
-			else if ((frames[k][i][j])["open"])
-			{
-				of << "0,";
-			}
-			else
-				of << "1,";
-		}
-		of << ";";
-	}
-}
-
-
 void CAWorld::save2file(char const * filename)
 {
 	//savefile format :
