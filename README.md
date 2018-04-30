@@ -11,4 +11,4 @@ How to use:
 2. with visualization version.
 
 Some of the animated plotting:
-![alt text](/images/Lava.gif)
+![alt text](/images/lava.gif)
