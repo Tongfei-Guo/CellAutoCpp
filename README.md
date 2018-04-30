@@ -11,4 +11,4 @@ How to use:
 2. with visualization version.
 
 Some of the animated plotting:
-![alt text](/images/lava.gif)
+![alt text](https://raw.githubusercontent.com/Tongfei-Guo/CellAutoCpp/aster/images/gameoflife.gif)
