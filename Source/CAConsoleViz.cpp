@@ -2,6 +2,8 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <iomanip>
+#include <ctime>
 
 void CAConsoleViz::Visualize(int nsteps, int fps){
     if (fps<=0){
@@ -10,11 +12,13 @@ void CAConsoleViz::Visualize(int nsteps, int fps){
     }
 
     auto ts=m_world->get_timestamp();
-    if (ts[0].size()>80 || ts.size()>80){
+    if (ts[0].size()>100 || ts.size()>100){
         std::cout<<"ERROR: cannot visualize a world as big as: "
             <<ts[0].size()<<"x"<<ts.size()<<std::endl;
         return;
     }
+
+    srand(time(NULL));
 
     for(int step=0; step<=nsteps; step++){
         if (step!=0){
@@ -28,6 +32,8 @@ void CAConsoleViz::Visualize(int nsteps, int fps){
             }
             std::cout<<std::endl;
         }
+
+        std::cout<<"Round: "<<std::setw(6)<<step<<std::endl;
 
         std::this_thread::sleep_for(std::chrono::milliseconds(1000/fps));
     }
