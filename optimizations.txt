@@ -1,4 +1,0 @@
-1. optimize reset in forall_step and step, performance untested.
-2. optimize measures. 6.84s
-3. optimize diffX and diffY from being functions to vectors. 6.42s
-4. get_neighbors if pass neighbors as reference could speed up to 6.30s, due to no construction and destruction of vector at each iteration, and possibly copy elision, but makes the interface less natural, so we decided not to use it. 
