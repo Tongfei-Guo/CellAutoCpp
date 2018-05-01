@@ -6,6 +6,12 @@
 #include "CATypes.h"
 #include "CAFunctions.h"
 #include <chrono>
+
+//render:
+#include <thread>
+#include <CArender.hpp>
+
+
 #include <iostream>
 int main()
 {
@@ -37,15 +43,25 @@ int main()
     	return (*self)["alive"];
     });
 
-/*
+
     std::vector<bitcolor> palette = {
         {0,0,0,255},
         {0,100,0,255}
     };
-    */
+    
+    CARender render(200,200, palette);
+    using namespace std::chrono_literals;
 
-    CAWorld world(Model(world_param_type(200, 200, 6), { grid_param_type("elementary", 100, process, reset, init) },1));
-    world.forall_step(200);
+
+    CAWorld world(Model(world_param_type(200, 200, 6), { grid_param_type("elementary", 100, process, reset, init) },1,getcolor));
+    for(int i = 0; i < 1000; i++)
+    {
+        world.forall_step(1);
+        auto bitmap = world.print_world();
+        if(!render.Renderworld(bitmap)) break;
+    }
+
+
     
 	return 0;
 }
