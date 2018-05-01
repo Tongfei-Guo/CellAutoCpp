@@ -1,16 +1,28 @@
-# CellAutoC-
-Cellular Automata Library implemented in C++
+# CellAutoCpp
+Cellular Automata Library implemented in C++ <br />
+(a course project done in class C++ design, offered by Columbia University Spring 2018)
 
-Documentations:
+**Authors:** <br />
+Haomin Long <br />
+Tongfei Guo <br />
+Xiaotian hu <br />
+
+**Acknowledgements:** <br />
+1. to CellAuto.js for the idea of this project <br />
+2. to Prof. Bjarne Stroustrup for his invaluable instructions. <br />
+3. to TAs Kai-Zhan Lee and Abhishek Shah for their suggestions. <br />
+
+**Documentations:**
 1. Refer to CellAutoCpp Tutorial.pdf for instructions on how to use this library.
 2. Refer to CellAutoCpp Documentation.pdf for detailed description on each of the APIs.
 3. Refer to CellAutoCpp Report.pdf for report of this project.
 
-How to use:
-1. Include header "CellAutoCpp.h" for no visualization version. Compile with -std=c++14 flag and link with -lpthread option.
-2. with visualization version.
+**How to use:**
+1. Download all .cpp and .h file from Source
+2. Include header "CellAutoCpp.h" for no visualization version. Compile with -std=c++14 flag and link with -lpthread option.
+3. with visualization version.
 
-Some of the animated plotting:
+**Some of the animated plotting:**
 1. Empty Cave &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 2. Cave &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 3.Forest Fire
 
 ![emptycave](https://github.com/Tongfei-Guo/CellAutoCpp/blob/master/Images/emptycave.gif)
