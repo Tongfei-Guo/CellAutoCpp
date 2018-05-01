@@ -28,6 +28,8 @@ Our library provides a way of visualization in console. Cellular Automata is dis
 
 In "ConsoleViz_demo" folder, we provide some example codes of visualization, together with a makefile. Use `make release` or `make debug` to compile these files and use `make clean` to erase the generated object files and executables. All executables are stored under the folder of `exe/`.
 
+![consoleviz_fractal](https://github.com/Tongfei-Guo/CellAutoCpp/blob/master/Images/consoleviz_fractal.png)
+
 **Some of the animated plotting:**
 1. Empty Cave &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 2. Cave &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 3.Forest Fire
 
