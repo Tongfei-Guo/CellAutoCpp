@@ -265,11 +265,7 @@ void CAWorld::loadfromfile(char const * filename)
 				auto statename = *(listit++);
 				auto stateval  = *(valit++);
 				(*grid[i][j])[statename] = stateval;
-				std::cout<<statename<<std::endl;
-				std::cout <<stateval <<std::endl;
 			}
-
-			std::cout<<"\n";
 		}
 	}
     savefile.close();
