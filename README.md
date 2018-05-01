@@ -20,7 +20,7 @@ Xiaotian Hu <br />
 **How to use:**
 1. Download all `.cpp` and `.h` file from Source
 2. Include header `CellAutoCpp.h` for no visualization version. Compile with `-std=c++14` flag and link with `-lpthread` option.
-3. with visualization version.
+3. To include visualization, use make file provided in visualization and modify line 24 "_SRC = source-file" accordingly, and put your source code in render/ folder. (or write make file on your own accordingly)
 
 
 **Simple Visualization in Console:**
