@@ -173,26 +173,28 @@ CAWorld &CAWorld::step(unsigned x, unsigned y)
 
 std::vector<int> CAWorld::print_world()
 {
-	std::vector<int> bitindex;
-	for (int i = 0; i != height; ++i)
-	{
-		for (int j = 0; j != width; ++j)
-		{
+    std::vector<int> bitindex;
+    for (int j = 0; j != width; ++j)
+    {
+        for (int i = 0; i != height; ++i)
+        {
             if(getcolor != nullptr)
             {
-            	int colorind = getcolor(grid[i][j]);  //std::get<3>(  )(&grid[i][j]);
+            	int colorind = getcolor(grid[i][width - j  -1]);  //std::get<3>(  )(&grid[i][j]);
+                //std::cout<<colorind<<std::endl;
             	bitindex.push_back(colorind);
             }
             else
             {
-            	//std::cout<<"Warning: the getcolor is not defined"<<std::endl;
-            	throw nogetcolor_error();
+            	std::cout<<"Warning: the getcolor is not defined"<<std::endl;
             }
 
-		}
 	}
+    }
+
 	return std::move(bitindex);
 }
+
 
 void CAWorld::save2file(char const * filename)
 {
