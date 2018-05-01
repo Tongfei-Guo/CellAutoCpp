@@ -39,16 +39,13 @@ int main()
     });
 
     //CAWorld world1(Model(world_param_type(100, 50, 6), { grid_param_type("Wall", 100, process, reset, init) },0));
-    //CAWorld world2(Model(world_param_type(100, 50, 6), { grid_param_type("Wall", 100, process, reset, init) },1));
-    CAWorld world3(Model(world_param_type(50, 50, 6), { grid_param_type("Wall", 100, process, reset, init) },1));
-    world3.AddMeasure(new CADistributionMeasure());
-	auto start = std::chrono::high_resolution_clock::now();
-	//world3.combine(world1.forall_step(2), 0, 99, 0, 49);
+    //CAWorld world2(Model(world_param_type(100, 50, 6), { grid_param_type("Wall", 100, process, reset, init) },0));
+    CAWorld world3(Model(world_param_type(50, 50, 6), { grid_param_type("Wall", 100, process, reset, init) },4));
+    //world3.AddMeasure(new CADistributionMeasure());
+    //world1.forall_step(2);
+	//world3.combine(world1, 0, 100, 0, 50);
     //world3.combine(world1.forall_step(2), 0, 100, 0, 50).combine(world2.forall_step(1), 0, 100, 50, 100).forall_step(1);
     world3.forall_step(100);
-    auto elapsed = std::chrono::high_resolution_clock::now() - start;
-    auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed).count();
-    std::cout << nanoseconds << "nanoseconds\n";
     auto timestamp = world3.get_timestamps();
     world3.print_test(timestamp, 0);
 

@@ -61,7 +61,7 @@ getcolor(model.getcolor)
         {
             for (auto j = 0; j != width; ++j)
             {
-                cells[i*width+j].timestamp_resize(model.buffersize-1);
+                cells[i*width+j].frame_resize(model.buffersize);
                 grid[i][j] = &cells[i*width+j];
                 grid[i][j]->x=i;
                 grid[i][j]->y=j;
@@ -191,7 +191,6 @@ std::vector<int> CAWorld::print_world()
 
 		}
 	}
-
 	return std::move(bitindex);
 }
 
@@ -300,7 +299,7 @@ void CAWorld::loadfromfile(char const * filename)
 CAWorld &CAWorld::combine(const CAWorld &world, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high)
 {
 	combine_error_check(world, r_low, r_high, c_low, c_high);
-	auto frames_before = grid[r_low][c_low]->timestamp_size();
+	auto frames_before = grid[r_low][c_low]->frame_size();
 	for (auto i = r_low; i != r_high; ++i)
 	{
 		for (auto j = c_low; j != c_high; ++j)
@@ -316,7 +315,7 @@ CAWorld &CAWorld::combine(const CAWorld &world, unsigned r_low, unsigned r_high,
             grid[i][j]->y = j;
 		}
 	}
-	auto frames_after = grid[r_low][c_low]->timestamp_size();
+	auto frames_after = grid[r_low][c_low]->frame_size();
 	if (frames_after > frames_before) // this only happens in CellUnboundedCell case.
     {
         for (auto i = 0; i != height; ++i)
@@ -324,7 +323,7 @@ CAWorld &CAWorld::combine(const CAWorld &world, unsigned r_low, unsigned r_high,
             for (auto j = 0; j != width; ++j)
             {
                 //std::cout << i << " " << j << std::endl;
-                grid[i][j]->timestamp_resize(frames_after);
+                grid[i][j]->frame_resize(frames_after);
             }
         }
     }
@@ -334,7 +333,7 @@ CAWorld &CAWorld::combine(const CAWorld &world, unsigned r_low, unsigned r_high,
 CAWorld &CAWorld::combine(CAWorld &&world, unsigned r_low, unsigned r_high, unsigned c_low, unsigned c_high)
 {
 	combine_error_check(world, r_low, r_high, c_low, c_high);
-	auto frames_before = grid[r_low][c_low]->timestamp_size();
+	auto frames_before = grid[r_low][c_low]->frame_size();
 	for (auto i = r_low; i != r_high; ++i)
 	{
 		for (auto j = c_low; j != c_high; ++j)
@@ -350,14 +349,14 @@ CAWorld &CAWorld::combine(CAWorld &&world, unsigned r_low, unsigned r_high, unsi
             grid[i][j]->y = j;
 		}
 	}
-	auto frames_after = grid[r_low][c_low]->timestamp_size();
+	auto frames_after = grid[r_low][c_low]->frame_size();
 	if (frames_after > frames_before) // this only happens in CellUnboundedCell case.
     {
         for (auto i = 0; i <= height; ++i)
         {
             for (auto j = 0; j <= width; ++j)
             {
-                grid[i][j]->timestamp_resize(frames_after);
+                grid[i][j]->frame_resize(frames_after);
             }
         }
     }
@@ -366,14 +365,13 @@ CAWorld &CAWorld::combine(CAWorld &&world, unsigned r_low, unsigned r_high, unsi
 
 std::vector<frame_type> CAWorld::get_timestamps()
 {
-    unsigned size = grid[0][0]->timestamp_size();
-    std::vector<frame_type> timestamps(size+1, frame_type(height, std::vector<Cell>(width, Cell())));
+    unsigned size = grid[0][0]->frame_size();
+    std::vector<frame_type> timestamps(size, frame_type(height, std::vector<Cell>(width, Cell())));
     for (int j = 0; j != height; ++j)
     {
         for (int k = 0; k != width; ++k)
         {
-            timestamps[0][j][k] = grid[j][k]->get_frame(0);
-            for (int i = 1; i <= size; ++i)
+            for (int i = 0; i != size; ++i)
             {
                 timestamps[i][j][k] = grid[j][k]->get_frame(i);
             }
@@ -382,14 +380,14 @@ std::vector<frame_type> CAWorld::get_timestamps()
     return timestamps;
 }
 
-frame_type CAWorld::get_timestamp()
+frame_type CAWorld::get_timestamp(unsigned num)
 {
     frame_type timestamp(height, std::vector<Cell>(width, Cell()));
     for (int j = 0; j != height; ++j)
     {
         for (int k = 0; k != width; ++k)
         {
-            timestamp[j][k] = grid[j][k]->get_frame(0);
+            timestamp[j][k] = grid[j][k]->get_frame(num);
         }
     }
     return timestamp;
@@ -433,7 +431,6 @@ void CAWorld::_forall_step()
     std::vector<std::thread> threads(num_cpus);
     if (buffersize != 1 || empty_reset != 1) // optimization : if no buffer and all reset functions for all types are empty, then skip the loop.
     {
-        //reset
         for (unsigned i = 0; i != num_cpus; ++i)
         {
             threads[i] = std::thread([i, num_cpus](grid_type &grid)
@@ -550,6 +547,7 @@ void CAWorld::copy_grid(const CAWorld &rhs)
         CellHistBounded *rhs_cells = dynamic_cast<CellHistBounded*>(rhs.grid[0][0]);
 	    for (auto i = 0; i != height; ++i)
         {
+            for (auto j = 0; j != width; ++j)
             for (auto j = 0; j != width; ++j)
             {
                 cells[i*width+j] = rhs_cells[i*width+j];

@@ -31,10 +31,10 @@ public:
 	// auxiliary functions
 	inline state_value &operator[](const state_name &state);
 	inline void set_type(const type_name &rhs_type);
-
 	inline const type_name &get_type() const;
 	inline const std::map<state_name, state_value> & get_states() const;
-
+	virtual inline Cell get_frame(unsigned i) const;
+	virtual inline const unsigned frame_size() const;
     int x,y;
 
 protected:
@@ -48,9 +48,7 @@ protected:
 	inline const reset_type&_call_reset() const;
 	inline const init_type&_call_init() const;
 	virtual void prepare_process() {} // does nothing in the base class
-	virtual inline const unsigned timestamp_size() const;
-	virtual inline void timestamp_resize(unsigned size);
-	virtual inline Cell get_frame(unsigned i) const;
+	virtual inline void frame_resize(unsigned size);
 	// the following functions are for deep copy&move between Cell type and its derived types.
 	// _clone should always be called with a _move, it will be free within the immediate _move where it gets called.
 	virtual inline Cell *_clone() const &;
@@ -73,14 +71,14 @@ public:
 	CellHistBounded& operator=(const CellHistBounded &) = default;
 	CellHistBounded& operator=(CellHistBounded &&) noexcept = default;
 	virtual ~CellHistBounded() final = default;
+	virtual inline Cell get_frame(unsigned i) const final;
+	virtual inline const unsigned frame_size() const final;
 private:
 	std::deque<type_name> type_hist;
 	std::deque<std::map<state_name, state_value>> states_hist;
 	// auxiliary functions
 	virtual inline void prepare_process() final;
-	virtual inline const unsigned timestamp_size() const final;
-	virtual inline void timestamp_resize(unsigned size) final;
-	virtual inline Cell get_frame(unsigned i) const final;
+	virtual inline void frame_resize(unsigned size) final;
 	// deep copy&move
 	virtual inline CellHistBounded *_clone() const & final;
 	virtual inline CellHistBounded *_clone() && final;
@@ -100,14 +98,14 @@ public:
 	CellHistUnbounded& operator=(const CellHistUnbounded &) = default;
 	CellHistUnbounded& operator=(CellHistUnbounded &&) noexcept = default;
 	virtual ~CellHistUnbounded() final = default;
+	virtual inline Cell get_frame(unsigned i) const final;
+	virtual inline const unsigned frame_size() const final;
 private:
 	std::vector<type_name> type_hist;
 	std::vector<std::map<state_name, state_value>> states_hist;
 	// auxiliary functions
 	virtual inline void prepare_process() final;
-	virtual inline const unsigned timestamp_size() const final;
-	virtual inline void timestamp_resize(unsigned size) final;
-	virtual inline Cell get_frame(unsigned i) const final;
+	virtual inline void frame_resize(unsigned size) final;
 	// deep copy&move
 	virtual inline CellHistUnbounded *_clone() const & final;
 	virtual inline CellHistUnbounded *_clone() && final;
@@ -163,14 +161,14 @@ inline const init_type&Cell::_call_init() const
 	return std::get<2>(type_aux_funcs.at(type));
 }
 
-inline const unsigned Cell::timestamp_size() const
+inline const unsigned Cell::frame_size() const
 {
-    return 0;
+    return 1;
 }
 
-inline void Cell::timestamp_resize(unsigned size)
+inline void Cell::frame_resize(unsigned size)
 {
-    throw internal_error("void Cell::timestamp_resize(" + std::to_string(size) + ")" ); // this function shouldn't be called
+    throw internal_error("void Cell::frame_resize(" + std::to_string(size) + ")" ); // this function shouldn't be called
 }
 inline Cell Cell::get_frame(unsigned i) const
 {
@@ -231,15 +229,16 @@ inline void CellHistBounded::prepare_process()
 	states_hist.push_back(states);
 }
 
-inline const unsigned CellHistBounded::timestamp_size() const
+inline const unsigned CellHistBounded::frame_size() const
 {
-    return type_hist.size();
+    return type_hist.size()+1;
 }
 
-inline void CellHistBounded::timestamp_resize(unsigned size)
+inline void CellHistBounded::frame_resize(unsigned size)
 {
-    type_hist.resize(size);
-    states_hist.resize(size);
+    //this is only used for CellUnbounded intialization
+    type_hist.resize(size-1);
+    states_hist.resize(size-1);
 }
 
 inline Cell CellHistBounded::get_frame(unsigned i) const
@@ -308,14 +307,10 @@ inline void CellHistBounded::_move(CellHistUnbounded *cell)
     type = std::move(cell->type);
 	states = std::move(cell->states);
 	auto size1 = type_hist.size(), size2 = cell->type_hist.size();
+	type_hist = std::deque<type_name>(size1);
+	states_hist = std::deque<std::map<state_name, state_value>>(size1);
 	copy(cell->type_hist.crbegin(), cell->type_hist.crbegin() + std::min(size1, size2), type_hist.rbegin());
 	copy(cell->states_hist.crbegin(), cell->states_hist.crbegin() + std::min(size1, size2), states_hist.rbegin());
-	auto diff_size = size1 - size2;
-	while (diff_size-- > 0)
-    {
-        type_hist.push_front(type_name());
-        states_hist.push_front(std::map<state_name, state_value>());
-    }
     delete cell;
 }
 
@@ -326,22 +321,22 @@ void CellHistUnbounded::prepare_process()
 	states_hist.push_back(states);
 }
 
-inline const unsigned CellHistUnbounded::timestamp_size() const
+inline const unsigned CellHistUnbounded::frame_size() const
 {
-    return type_hist.size();
+    return type_hist.size()+1;
 }
 
-inline void CellHistUnbounded::timestamp_resize(unsigned size)
+inline void CellHistUnbounded::frame_resize(unsigned size)
 {
 
-    if (type_hist.size() < size)
+    if (type_hist.size() < size-1)
     {
-        std::vector<type_name> temp_type_hist(size);
+        std::vector<type_name> temp_type_hist(size-1);
         std::copy(type_hist.crbegin(), type_hist.crend(), temp_type_hist.rbegin());
-        type_hist = temp_type_hist;
-        std::vector<std::map<state_name, state_value>> temp_states_hist(size);
+        type_hist = std::move(temp_type_hist);
+        std::vector<std::map<state_name, state_value>> temp_states_hist(size-1);
         std::copy(states_hist.crbegin(), states_hist.crend(), temp_states_hist.rbegin());
-        states_hist = temp_states_hist;
+        states_hist = std::move(temp_states_hist);
     }
 }
 
