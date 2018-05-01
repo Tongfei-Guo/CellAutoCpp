@@ -35,7 +35,7 @@ In "ConsoleViz_demo" folder, we provide some example codes of visualization, tog
 **How to visualize:**
 Our library provides visualization. It is implemented with OpenGL version 3.3. To use the visualization, please make sure the glfw3 is deployed as shared library in your computer. To install it, type in:
 
-sudo apt-get install libglfw3-dev
+`sudo apt-get install libglfw3-dev`
 
 In "visualization" folder, we provide some example codes of visualization, together with a makefile. Use `make release` or `make debug` to compile these files and use `make clean` to erase the generated object files and executables. All executables are stored under the folder of `exe/`.
 
